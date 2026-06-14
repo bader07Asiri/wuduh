@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الهوية المرئية — وضوح | Wuduh</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary-dark:   #0F2057;
+    --primary:        #1E3A8A;
+    --primary-mid:    #2563EB;
+    --accent:         #0EA5E9;
+    --gold:           #F59E0B;
+    --gold-light:     #FEF3C7;
+    --success:        #10B981;
+    --bg:             #F8FAFC;
+    --bg-card:        #FFFFFF;
+    --text-dark:      #0F172A;
+    --text-mid:       #334155;
+    --text-light:     #64748B;
+    --border:         #E2E8F0;
+  }
+
+  body {
+    font-family: 'Tajawal', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    direction: rtl;
+  }
+
+  /* ===== HEADER ===== */
+  .brand-header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-mid) 100%);
+    color: white;
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .brand-header::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 300px; height: 300px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .brand-header::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; right: -60px;
+    width: 350px; height: 350px;
+    background: rgba(14,165,233,0.08);
+    border-radius: 50%;
+  }
+  .brand-header h1 {
+    font-size: 18px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    font-family: 'Inter', sans-serif;
+  }
+  .brand-header h2 {
+    font-size: 52px;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 8px;
+  }
+  .brand-header p {
+    font-size: 18px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 300;
+  }
+
+  /* ===== LOGO AREA ===== */
+  .logo-showcase {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .logo-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 900;
+    color: white;
+    font-family: 'Tajawal', sans-serif;
+    box-shadow: 0 8px 32px rgba(14,165,233,0.35);
+  }
+  .logo-text-block { text-align: right; }
+  .logo-ar {
+    font-size: 36px;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+  }
+  .logo-en {
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 4px;
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+  }
+
+  /* ===== SECTION ===== */
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 32px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-mid);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 8px;
+  }
+  .section-heading {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 40px;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ===== COLORS ===== */
+  .colors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+  }
+  .color-card {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    background: white;
+  }
+  .color-swatch {
+    height: 100px;
+    width: 100%;
+  }
+  .color-info {
+    padding: 14px 16px;
+  }
+  .color-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+  }
+  .color-name-en {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 6px;
+  }
+  .color-hex {
+    font-size: 12px;
+    font-family: 'Inter', monospace;
+    color: var(--text-light);
+    background: var(--bg);
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+  .color-usage {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* ===== TYPOGRAPHY ===== */
+  .type-grid { display: grid; gap: 32px; }
+  .type-card {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .type-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-mid);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 16px;
+  }
+  .type-specimen-ar {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--text-dark);
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .type-specimen-en {
+    font-family: 'Inter', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--text-dark);
+    line-height: 1.2;
+    direction: ltr;
+    text-align: left;
+    margin-bottom: 12px;
+  }
+  .type-weights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .weight-item {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+  }
+  .weight-sample-ar {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 18px;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+  }
+  .weight-sample-en {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    direction: ltr;
+  }
+  .weight-label {
+    font-size: 10px;
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* ===== TYPE SCALE ===== */
+  .scale-table { width: 100%; border-collapse: collapse; }
+  .scale-table th {
+    text-align: right;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    border-bottom: 1px solid var(--border);
+  }
+  .scale-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .scale-name { font-size: 12px; color: var(--text-light); font-family: 'Inter', sans-serif; }
+  .scale-size { font-size: 12px; color: var(--primary-mid); font-family: 'Inter', monospace; }
+
+  /* ===== LOGO VARIANTS ===== */
+  .logo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  .logo-card {
+    border-radius: 16px;
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .logo-card.light { background: white; }
+  .logo-card.dark { background: var(--primary-dark); }
+  .logo-card.gradient { background: linear-gradient(135deg, var(--primary-dark), var(--primary-mid)); }
+  .logo-card.neutral { background: var(--bg); border: 1px solid var(--border); }
+
+  .logo-v {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .lv-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 900;
+    font-family: 'Tajawal', sans-serif;
+    flex-shrink: 0;
+  }
+  .lv-icon.color { background: linear-gradient(135deg, var(--accent), var(--gold)); color: white; }
+  .lv-icon.white { background: white; color: var(--primary); }
+  .lv-icon.outline { background: transparent; border: 2px solid white; color: white; }
+  .lv-icon.dark-icon { background: var(--primary-dark); color: white; }
+
+  .lv-text .ar { font-family: 'Tajawal', sans-serif; font-weight: 800; font-size: 22px; }
+  .lv-text .en { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
+  .lv-text.on-dark .ar, .lv-text.on-dark .en { color: white; }
+  .lv-text.on-dark .en { color: rgba(255,255,255,0.55); }
+  .lv-text.on-light .ar { color: var(--text-dark); }
+  .lv-text.on-light .en { color: var(--text-light); }
+
+  .logo-variant-label {
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .logo-card.light .logo-variant-label,
+  .logo-card.neutral .logo-variant-label { color: var(--text-light); }
+  .logo-card.dark .logo-variant-label,
+  .logo-card.gradient .logo-variant-label { color: rgba(255,255,255,0.5); }
+
+  /* ===== BUTTONS ===== */
+  .buttons-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    direction: rtl;
+  }
+  .btn {
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary-mid); color: white; }
+  .btn-secondary { background: var(--gold); color: var(--text-dark); }
+  .btn-outline { background: transparent; color: var(--primary-mid); border: 2px solid var(--primary-mid); }
+  .btn-ghost { background: var(--bg); color: var(--text-mid); }
+  .btn-danger { background: #EF4444; color: white; }
+
+  /* ===== SPACING & RADIUS ===== */
+  .tokens-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .token-card {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .token-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+  }
+  .radius-row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+  .radius-box {
+    background: var(--primary-mid);
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.85;
+  }
+  .radius-label { font-size: 10px; font-family: 'Inter', sans-serif; color: var(--text-light); text-align: center; margin-top: 6px; }
+
+  /* ===== TONE ===== */
+  .tone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tone-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .tone-card h4 { font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; }
+  .tone-list { list-style: none; }
+  .tone-list li {
+    font-size: 14px;
+    color: var(--text-mid);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tone-list li:last-child { border-bottom: none; }
+  .tone-do li::before { content: '✓'; color: var(--success); font-weight: 700; }
+  .tone-dont li::before { content: '✗'; color: #EF4444; font-weight: 700; }
+
+  /* ===== MOCKUP ===== */
+  .mockup-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+  }
+  .mockup-topbar {
+    background: var(--primary-dark);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .mockup-topbar .logo-mini {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .mockup-topbar .logo-mini .icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900; color: white;
+    font-family: 'Tajawal', sans-serif;
+  }
+  .mockup-topbar .logo-mini span {
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 800; font-size: 18px; color: white;
+  }
+  .mockup-topbar .nav {
+    display: flex; gap: 24px;
+  }
+  .mockup-topbar .nav a {
+    font-size: 13px; color: rgba(255,255,255,0.6);
+    font-family: 'Tajawal', sans-serif; text-decoration: none;
+  }
+  .mockup-hero {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    padding: 64px 40px;
+    text-align: center;
+    color: white;
+  }
+  .mockup-hero h2 {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 38px; font-weight: 900;
+    margin-bottom: 16px;
+  }
+  .mockup-hero p {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px; color: rgba(255,255,255,0.7);
+    max-width: 500px; margin: 0 auto 28px;
+    line-height: 1.7;
+  }
+  .mockup-hero .cta-row {
+    display: flex; gap: 12px; justify-content: center;
+  }
+  .mockup-hero .cta-primary {
+    background: var(--gold);
+    color: var(--text-dark);
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700; font-size: 16px;
+    border: none; cursor: pointer;
+  }
+  .mockup-hero .cta-secondary {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 600; font-size: 16px;
+    border: 1px solid rgba(255,255,255,0.25); cursor: pointer;
+  }
+
+  /* ===== FOOTER ===== */
+  .brand-footer {
+    background: var(--primary-dark);
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 32px;
+    font-size: 13px;
+    font-family: 'Tajawal', sans-serif;
+    margin-top: 80px;
+  }
+  .brand-footer strong { color: white; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="brand-header">
+  <h1>Brand Identity Guidelines</h1>
+  <h2>وضوح | Wuduh</h2>
+  <p>دليل الهوية المرئية الرسمي — الإصدار 1.0</p>
+
+  <div class="logo-showcase">
+    <div class="logo-icon">و</div>
+    <div class="logo-text-block">
+      <div class="logo-ar">وضوح</div>
+      <div class="logo-en">WUDUH</div>
+    </div>
+  </div>
+</div>
+
+<!-- =============== COLORS =============== -->
+<div class="section">
+  <div class="section-title">01 — Colors</div>
+  <div class="section-heading">لوحة الألوان الرسمية</div>
+
+  <div class="colors-grid">
+    <div class="color-card">
+      <div class="color-swatch" style="background:#0F2057;"></div>
+      <div class="color-info">
+        <div class="color-name">النيلي الداكن</div>
+        <div class="color-name-en">Deep Navy</div>
+        <div class="color-hex">#0F2057</div>
+        <div class="color-usage">الشريط العلوي، الخلفيات الداكنة، الـ Footer</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#1E3A8A;"></div>
+      <div class="color-info">
+        <div class="color-name">الأزرق الملكي</div>
+        <div class="color-name-en">Royal Blue</div>
+        <div class="color-hex">#1E3A8A</div>
+        <div class="color-usage">الخلفيات التدرجية، الـ Hero Section</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#2563EB;"></div>
+      <div class="color-info">
+        <div class="color-name">الأزرق الرئيسي</div>
+        <div class="color-name-en">Primary Blue</div>
+        <div class="color-hex">#2563EB</div>
+        <div class="color-usage">الأزرار الرئيسية، الروابط، العناصر التفاعلية</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#0EA5E9;"></div>
+      <div class="color-info">
+        <div class="color-name">الأزرق السماوي</div>
+        <div class="color-name-en">Sky Blue</div>
+        <div class="color-hex">#0EA5E9</div>
+        <div class="color-usage">الـ Accent، أيقونات الشعار، التمييز</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#F59E0B;"></div>
+      <div class="color-info">
+        <div class="color-name">الذهبي</div>
+        <div class="color-name-en">Amber Gold</div>
+        <div class="color-hex">#F59E0B</div>
+        <div class="color-usage">أزرار CTA، التمييز، عناصر Premium</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#10B981;"></div>
+      <div class="color-info">
+        <div class="color-name">الأخضر الزمردي</div>
+        <div class="color-name-en">Emerald</div>
+        <div class="color-hex">#10B981</div>
+        <div class="color-usage">النجاح، الاكتمال، الموافقة</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#F8FAFC; border: 1px solid #E2E8F0;"></div>
+      <div class="color-info">
+        <div class="color-name">الخلفية</div>
+        <div class="color-name-en">Background</div>
+        <div class="color-hex">#F8FAFC</div>
+        <div class="color-usage">خلفية الصفحات العامة</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#0F172A;"></div>
+      <div class="color-info">
+        <div class="color-name">أسود الوضوح</div>
+        <div class="color-name-en">Clarity Black</div>
+        <div class="color-hex">#0F172A</div>
+        <div class="color-usage">النصوص الرئيسية، العناوين</div>
+      </div>
+    </div>
+  </div>
+</div>
+<hr class="divider">
+
+<!-- =============== TYPOGRAPHY =============== -->
+<div class="section">
+  <div class="section-title">02 — Typography</div>
+  <div class="section-heading">الخطوط الرسمية</div>
+
+  <div class="type-grid">
+    <!-- Arabic Font -->
+    <div class="type-card">
+      <div class="type-label">الخط العربي الرسمي</div>
+      <div class="type-specimen-ar">تجوال — Tajawal</div>
+      <p style="font-family:'Tajawal';font-size:16px;color:var(--text-mid);line-height:1.8;margin-bottom:20px;">
+        إدارة مشاريعك باحترافية PMP — بدون مدير مشاريع. وضوح يبني خطة مشروعك الكاملة في دقائق.
+      </p>
+      <div class="type-weights">
+        <div class="weight-item">
+          <div class="weight-sample-ar" style="font-weight:300;">وضوح</div>
+          <div class="weight-label">Light 300</div>
+        </div>
+        <div class="weight-item">
+          <div class="weight-sample-ar" style="font-weight:400;">وضوح</div>
+          <div class="weight-label">Regular 400</div>
+        </div>
+        <div class="weight-item">
+          <div class="weight-sample-ar" style="font-weight:500;">وضوح</div>
+          <div class="weight-label">Medium 500</div>
+        </div>
+        <div class="weight-item">
+          <div class="weight-sample-ar" style="font-weight:700;">وضوح</div>
+          <div class="weight-label">Bold 700</div>
+        </div>
+        <div class="weight-item">
+          <div class="weight-sample-ar" style="font-weight:800;">وضوح</div>
+          <div class="weight-label">ExtraBold 800</div>
+        </div>
+        <div class="weight-item">
+          <div class="weight-sample-ar" style="font-weight:900;">وضوح</div>
+          <div class="weight-label">Black 900</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- English Font -->
+    <div class="type-card">
+      <div class="type-label">الخط الإنجليزي الرسمي</div>
+      <div class="type-specimen-en">Inter</div>
+      <p style="font-family:'Inter';font-size:16px;color:var(--text-mid);line-height:1.8;direction:ltr;text-align:left;margin-bottom:20px;">
+        Manage your projects with PMP standards — no project manager needed. Wuduh builds your full project plan in minutes.
+      </p>
+      <div class="type-weights">
+        <div class="weight-item">
+          <div class="weight-sample-en" style="font-weight:300;">Wuduh</div>
+          <div class="weight-label">Light 300</div>
+        </div>
+        <div class="weight-item">
+          <div class="weight-sample-en" style="font-weight:400;">Wuduh</div>
+          <div class="weight-label">Regular 400</div>
+        </div>
+        <div class="weight-item">
+          <div class="weight-sample-en" style="font-weight:600;">Wuduh</div>
+          <div class="weight-label">SemiBold 600</div>
+        </div>
+        <div class="weight-item">
+          <div class="weight-sample-en" style="font-weight:700;">Wuduh</div>
+          <div class="weight-label">Bold 700</div>
+        </div>
+        <div class="weight-item">
+          <div class="weight-sample-en" style="font-weight:800;">Wuduh</div>
+          <div class="weight-label">ExtraBold 800</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Type Scale -->
+  <div class="type-card" style="margin-top:20px;">
+    <div class="type-label" style="margin-bottom:20px;">حجم النصوص — Type Scale</div>
+    <table class="scale-table">
+      <thead>
+        <tr>
+          <th>النوع</th>
+          <th>الحجم</th>
+          <th>الوزن</th>
+          <th>الاستخدام</th>
+          <th>المثال</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="scale-name">Display</span></td>
+          <td><span class="scale-size">52px</span></td>
+          <td><span class="scale-size">900</span></td>
+          <td style="font-size:13px;color:var(--text-mid);">عنوان الصفحة الرئيسية</td>
+          <td><span style="font-family:'Tajawal';font-size:28px;font-weight:900;">وضوح</span></td>
+        </tr>
+        <tr>
+          <td><span class="scale-name">H1</span></td>
+          <td><span class="scale-size">36px</span></td>
+          <td><span class="scale-size">800</span></td>
+          <td style="font-size:13px;color:var(--text-mid);">عناوين الأقسام الرئيسية</td>
+          <td><span style="font-family:'Tajawal';font-size:22px;font-weight:800;">ابدأ مشروعك</span></td>
+        </tr>
+        <tr>
+          <td><span class="scale-name">H2</span></td>
+          <td><span class="scale-size">28px</span></td>
+          <td><span class="scale-size">700</span></td>
+          <td style="font-size:13px;color:var(--text-mid);">عناوين الصفحات الداخلية</td>
+          <td><span style="font-family:'Tajawal';font-size:18px;font-weight:700;">تفاصيل المشروع</span></td>
+        </tr>
+        <tr>
+          <td><span class="scale-name">H3</span></td>
+          <td><span class="scale-size">20px</span></td>
+          <td><span class="scale-size">700</span></td>
+          <td style="font-size:13px;color:var(--text-mid);">عناوين البطاقات والأقسام</td>
+          <td><span style="font-family:'Tajawal';font-size:16px;font-weight:700;">الجدول الزمني</span></td>
+        </tr>
+        <tr>
+          <td><span class="scale-name">Body</span></td>
+          <td><span class="scale-size">16px</span></td>
+          <td><span class="scale-size">400</span></td>
+          <td style="font-size:13px;color:var(--text-mid);">النص الأساسي</td>
+          <td><span style="font-family:'Tajawal';font-size:14px;">نص المحتوى العادي</span></td>
+        </tr>
+        <tr>
+          <td><span class="scale-name">Small</span></td>
+          <td><span class="scale-size">13px</span></td>
+          <td><span class="scale-size">400</span></td>
+          <td style="font-size:13px;color:var(--text-mid);">التسميات والتفاصيل</td>
+          <td><span style="font-family:'Tajawal';font-size:12px;color:var(--text-light);">تسمية الحقل</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<hr class="divider">
+
+<!-- =============== LOGO VARIANTS =============== -->
+<div class="section">
+  <div class="section-title">03 — Logo</div>
+  <div class="section-heading">متغيرات الشعار</div>
+
+  <div class="logo-grid">
+    <div class="logo-card light">
+      <div class="logo-v">
+        <div class="lv-icon color">و</div>
+        <div class="lv-text on-light">
+          <div class="ar">وضوح</div>
+          <div class="en">WUDUH</div>
+        </div>
+      </div>
+      <div class="logo-variant-label">On White</div>
+    </div>
+
+    <div class="logo-card dark">
+      <div class="logo-v">
+        <div class="lv-icon color">و</div>
+        <div class="lv-text on-dark">
+          <div class="ar">وضوح</div>
+          <div class="en">WUDUH</div>
+        </div>
+      </div>
+      <div class="logo-variant-label">On Dark</div>
+    </div>
+
+    <div class="logo-card gradient">
+      <div class="logo-v">
+        <div class="lv-icon white">و</div>
+        <div class="lv-text on-dark">
+          <div class="ar">وضوح</div>
+          <div class="en">WUDUH</div>
+        </div>
+      </div>
+      <div class="logo-variant-label">On Gradient</div>
+    </div>
+
+    <div class="logo-card neutral">
+      <div class="lv-icon color" style="width:60px;height:60px;font-size:30px;border-radius:14px;">و</div>
+      <div class="logo-variant-label">Icon Only</div>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:16px;padding:24px;margin-top:20px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+    <div class="type-label" style="margin-bottom:16px;">مفهوم الشعار</div>
+    <p style="font-family:'Tajawal';font-size:15px;color:var(--text-mid);line-height:1.8;">
+      الشعار يعتمد على حرف <strong style="color:var(--primary-mid);">«و»</strong> من «وضوح» بخط Tajawal الأسود داخل مربع بزوايا ناعمة بتدرج من الأزرق السماوي إلى الذهبي.
+      هذا التدرج يمثل رحلة المشروع: الانطلاق (أزرق) وصولاً للنجاح (ذهبي).
+      الاسم العربي يُكتب دائماً بالخط الثقيل، والإنجليزي بحرف خفيف للتمييز.
+    </p>
+  </div>
+</div>
+<hr class="divider">
+
+<!-- =============== BUTTONS =============== -->
+<div class="section">
+  <div class="section-title">04 — Components</div>
+  <div class="section-heading">الأزرار والعناصر</div>
+
+  <div style="background:white;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+    <div class="type-label" style="margin-bottom:24px;">أنواع الأزرار</div>
+    <div class="buttons-row">
+      <button class="btn btn-primary">ابدأ مجاناً</button>
+      <button class="btn btn-secondary">اشترك الآن</button>
+      <button class="btn btn-outline">تعرف أكثر</button>
+      <button class="btn btn-ghost">إلغاء</button>
+      <button class="btn btn-danger">حذف المشروع</button>
+    </div>
+  </div>
+</div>
+<hr class="divider">
+
+<!-- =============== TONE =============== -->
+<div class="section">
+  <div class="section-title">05 — Voice & Tone</div>
+  <div class="section-heading">صوت العلامة التجارية</div>
+
+  <div class="tone-grid">
+    <div class="tone-card">
+      <h4>✓ نحن نقول</h4>
+      <ul class="tone-list tone-do">
+        <li>بنينا لك خطة مشروعك كاملة</li>
+        <li>مشروعك جاهز في 5 دقائق</li>
+        <li>احترافية PMP بدون تعقيد</li>
+        <li>اشتغل بذكاء، لا بجهد أكثر</li>
+        <li>وضوح يدير، أنت تقود</li>
+      </ul>
+    </div>
+    <div class="tone-card">
+      <h4>✗ نتجنب</h4>
+      <ul class="tone-list tone-dont">
+        <li>برنامج إدارة مشاريع متقدم</li>
+        <li>يستخدم خوارزميات معقدة</li>
+        <li>منصة تكنولوجية متطورة</li>
+        <li>نظام ذكاء اصطناعي...</li>
+        <li>حلول متكاملة لإدارة...</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:16px;padding:28px;margin-top:20px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+    <div class="type-label" style="margin-bottom:16px;">شخصية العلامة</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <span style="background:var(--gold-light);color:var(--text-dark);padding:8px 18px;border-radius:20px;font-family:'Tajawal';font-weight:700;font-size:14px;">احترافي</span>
+      <span style="background:#EFF6FF;color:var(--primary-mid);padding:8px 18px;border-radius:20px;font-family:'Tajawal';font-weight:700;font-size:14px;">واثق</span>
+      <span style="background:#F0FDF4;color:var(--success);padding:8px 18px;border-radius:20px;font-family:'Tajawal';font-weight:700;font-size:14px;">واضح</span>
+      <span style="background:#F8FAFC;color:var(--text-mid);padding:8px 18px;border-radius:20px;font-family:'Tajawal';font-weight:700;font-size:14px;">مباشر</span>
+      <span style="background:#FFF7ED;color:#EA580C;padding:8px 18px;border-radius:20px;font-family:'Tajawal';font-weight:700;font-size:14px;">محفّز</span>
+    </div>
+  </div>
+</div>
+<hr class="divider">
+
+<!-- =============== MOCKUP =============== -->
+<div class="section">
+  <div class="section-title">06 — In Use</div>
+  <div class="section-heading">الهوية في التطبيق</div>
+
+  <div class="mockup-card">
+    <div class="mockup-topbar">
+      <div class="logo-mini">
+        <div class="icon">و</div>
+        <span>وضوح</span>
+      </div>
+      <div class="nav">
+        <a href="#">الميزات</a>
+        <a href="#">التسعير</a>
+        <a href="#">تسجيل الدخول</a>
+      </div>
+    </div>
+    <div class="mockup-hero">
+      <h2>إدارة مشاريعك باحترافية PMP</h2>
+      <p>وضوح يحول تفاصيل مشروعك إلى خطة احترافية كاملة في دقائق — وفق معايير PMI العالمية.</p>
+      <div class="cta-row">
+        <button class="cta-primary">ابدأ مجاناً</button>
+        <button class="cta-secondary">شاهد كيف يعمل</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="brand-footer">
+  <strong>وضوح | Wuduh</strong> — دليل الهوية المرئية الرسمي، الإصدار 1.0 — يونيو 2026
+</div>
+
+</body>
+</html>

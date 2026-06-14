@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="og-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="60%" stop-color="#1E3A80"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <radialGradient id="og-sphere" cx="42%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="40%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </radialGradient>
+    <linearGradient id="og-ring1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#1E3A80" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="og-ring2" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="og-glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="og-text-glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#og-bg)"/>
+
+  <!-- Subtle grid dots -->
+  <pattern id="grid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+    <circle cx="30" cy="30" r="1" fill="#38BDF8" opacity="0.08"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- Logo sphere (left side) -->
+  <g transform="translate(200, 315)">
+    <!-- Outer ring -->
+    <ellipse cx="0" cy="0" rx="135" ry="50" stroke="url(#og-ring1)" stroke-width="3" fill="none"
+      transform="rotate(-20 0 0)" filter="url(#og-glow)"/>
+    <!-- Middle ring -->
+    <ellipse cx="0" cy="0" rx="105" ry="37" stroke="url(#og-ring2)" stroke-width="2.5" fill="none"
+      transform="rotate(-20 0 0)"/>
+    <!-- Inner ring -->
+    <ellipse cx="0" cy="0" rx="75" ry="27" stroke="#38BDF8" stroke-width="2" stroke-opacity="0.6" fill="none"
+      transform="rotate(-20 0 0)"/>
+    <!-- Sphere -->
+    <circle cx="0" cy="0" r="50" fill="url(#og-sphere)"/>
+    <!-- Specular -->
+    <ellipse cx="-15" cy="-15" rx="16" ry="10" fill="white" opacity="0.3" transform="rotate(-15 -15 -15)"/>
+  </g>
+
+  <!-- Brand name -->
+  <text x="430" y="270" font-family="Montserrat, Arial, sans-serif" font-weight="800"
+    font-size="96" fill="white" letter-spacing="-2" filter="url(#og-text-glow)" opacity="0.15">WUDUH</text>
+  <text x="430" y="270" font-family="Montserrat, Arial, sans-serif" font-weight="800"
+    font-size="96" fill="white" letter-spacing="-2">WUDUH</text>
+
+  <!-- Tagline (Latin) -->
+  <text x="432" y="320" font-family="Montserrat, Arial, sans-serif" font-weight="500"
+    font-size="22" fill="#00D4FF" letter-spacing="6">CLARITY IN EVERY PROJECT</text>
+
+  <!-- Divider -->
+  <line x1="430" y1="355" x2="1100" y2="355" stroke="#38BDF8" stroke-width="1" stroke-opacity="0.3"/>
+
+  <!-- Arabic tagline -->
+  <text x="1100" y="420" font-family="Tajawal, Arial, sans-serif" font-weight="700"
+    font-size="38" fill="white" text-anchor="end">إدارة مشاريعك باحترافية PMP</text>
+
+  <!-- Sub-tagline -->
+  <text x="1100" y="470" font-family="Tajawal, Arial, sans-serif" font-weight="400"
+    font-size="24" fill="#CBD5E1" text-anchor="end">منصة ذكاء اصطناعي متخصصة — بدون مدير مشاريع</text>
+
+  <!-- PMI badge -->
+  <rect x="430" y="510" width="200" height="44" rx="22" fill="#2563EB" opacity="0.3" stroke="#00D4FF" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="530" y="537" font-family="Montserrat, Arial, sans-serif" font-weight="700"
+    font-size="14" fill="#00D4FF" text-anchor="middle" letter-spacing="2">PMI / PMBOK</text>
+
+  <rect x="650" y="510" width="220" height="44" rx="22" fill="#2563EB" opacity="0.3" stroke="#38BDF8" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="760" y="537" font-family="Montserrat, Arial, sans-serif" font-weight="700"
+    font-size="14" fill="#38BDF8" text-anchor="middle" letter-spacing="2">AI-POWERED</text>
+</svg>

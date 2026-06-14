@@ -1,0 +1,99 @@
+/* ── Google Fonts ──────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Fonts */
+    --font-tajawal:    'Tajawal', sans-serif;
+    --font-montserrat: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+
+    /* Wuduh Brand Colors */
+    --color-navy:      #0F172A;
+    --color-royal:     #1E3A80;
+    --color-blue:      #2563EB;
+    --color-light:     #38BDF8;
+    --color-cyan:      #00D4FF;
+    --color-silver:    #CBD5E1;
+    --color-gray:      #94A3B8;
+    --color-slate:     #64748B;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-tajawal), sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-color: #f8fafc;
+    color: #0F172A;
+  }
+
+  /* Headings use Montserrat for Latin text */
+  h1, h2, h3 {
+    font-family: var(--font-montserrat), var(--font-tajawal), sans-serif;
+    font-weight: 700;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  /* Scrollbar – brand silver */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb { background: #94A3B8; border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2563EB; }
+}
+
+@layer utilities {
+  /* ── Font helpers ─────────────────────────── */
+  .font-arabic  { font-family: var(--font-tajawal), sans-serif; }
+  .font-brand   { font-family: var(--font-montserrat), sans-serif; }
+  .font-latin   { font-family: var(--font-montserrat), sans-serif; }
+
+  /* ── Brand gradients ──────────────────────── */
+  .bg-brand-gradient {
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A80 60%, #2563EB 100%);
+  }
+  /* legacy alias */
+  .bg-wuduh-gradient {
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A80 60%, #2563EB 100%);
+  }
+  .bg-cyan-gradient {
+    background: linear-gradient(135deg, #2563EB, #00D4FF);
+  }
+  .bg-card-gradient {
+    background: linear-gradient(160deg, #1E3A80 0%, #0F172A 100%);
+  }
+
+  /* ── Text gradient (brand blue → cyan) ────── */
+  .text-gradient {
+    background: linear-gradient(135deg, #2563EB, #00D4FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Glow effects ─────────────────────────── */
+  .shadow-glow      { box-shadow: 0 0 24px 0 rgba(37,99,235,0.35); }
+  .shadow-glow-cyan { box-shadow: 0 0 32px 0 rgba(0,212,255,0.25); }
+  .shadow-card      { box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07); }
+  .shadow-modal     { box-shadow: 0 8px 40px 0 rgba(0,0,0,0.14); }
+
+  /* ── Brand border ─────────────────────────── */
+  .border-brand { border-color: #1E3A80; }
+
+  /* ── Glass card (dark surfaces) ────────────── */
+  .glass-dark {
+    background: rgba(30, 58, 128, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(56, 189, 248, 0.15);
+  }
+}

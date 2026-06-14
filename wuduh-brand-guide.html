@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>وضوح — دليل الهوية البصرية</title>
+<style>
+  :root {
+    --navy: #0F172A;
+    --navy-800: #1E293B;
+    --navy-700: #334155;
+    --blue: #1B4FD8;
+    --blue-light: #3B82F6;
+    --gold: #D97706;
+    --gold-light: #F59E0B;
+    --slate: #64748B;
+    --slate-light: #94A3B8;
+    --white: #FFFFFF;
+    --gray-50: #F8FAFC;
+    --gray-100: #F1F5F9;
+    --border: #E2E8F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--gray-50);
+    color: var(--navy);
+    line-height: 1.6;
+  }
+  /* Header */
+  .hero {
+    background: var(--navy);
+    padding: 64px 40px;
+    text-align: center;
+  }
+  .hero-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .logo-mark {
+    width: 72px; height: 72px;
+    background: var(--blue);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 42px; font-weight: 900; color: white;
+  }
+  .logo-text { text-align: right; }
+  .logo-text .ar { font-size: 36px; font-weight: 900; color: white; }
+  .logo-text .en { font-size: 13px; font-weight: 400; color: var(--slate-light); letter-spacing: 6px; margin-top: 2px; }
+  .hero h1 { font-size: 14px; font-weight: 500; color: var(--slate-light); letter-spacing: .12em; text-transform: uppercase; margin-top: 8px; }
+
+  /* Layout */
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+  .section { margin-bottom: 56px; }
+  .section-title {
+    font-size: 11px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--slate);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px; margin-bottom: 24px;
+  }
+
+  /* Logo grid */
+  .logo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .logo-card {
+    border-radius: 12px; padding: 32px; display: flex;
+    flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    min-height: 160px;
+  }
+  .logo-card.dark { background: var(--navy); }
+  .logo-card.light { background: white; border: 1px solid var(--border); }
+  .logo-card.blue { background: var(--blue); }
+  .logo-card-label { font-size: 12px; color: var(--slate); }
+  .logo-card.dark .logo-card-label { color: var(--slate-light); }
+  .logo-card.blue .logo-card-label { color: rgba(255,255,255,.6); }
+
+  /* Logo SVG inline */
+  .logo-variants { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* Colors */
+  .color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .color-card { border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .color-swatch { height: 80px; }
+  .color-info { background: white; padding: 12px; }
+  .color-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .color-hex { font-family: 'Courier New', monospace; font-size: 12px; color: var(--slate); margin-top: 2px; }
+  .color-role { font-size: 11px; color: var(--slate-light); margin-top: 4px; }
+
+  .shade-row { display: flex; height: 40px; border-radius: 8px; overflow: hidden; margin-top: 16px; gap: 2px; }
+  .shade { flex: 1; }
+
+  /* Typography */
+  .type-table { width: 100%; }
+  .type-row { padding: 16px 0; border-bottom: 1px solid var(--border); display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .type-row:last-child { border-bottom: none; }
+  .type-meta { font-family: 'Courier New', monospace; font-size: 11px; color: var(--slate-light); white-space: nowrap; }
+
+  /* Spacing */
+  .spacing-row { display: flex; align-items: center; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .spacing-bar { background: var(--blue); border-radius: 2px; height: 8px; }
+  .spacing-label { font-family: 'Courier New', monospace; font-size: 12px; color: var(--slate); width: 60px; }
+  .spacing-desc { font-size: 13px; color: var(--navy-700); }
+
+  /* Usage examples */
+  .mockup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .mockup-card { border-radius: 12px; overflow: hidden; }
+
+  /* Nav mockup */
+  .nav-mock { background: var(--navy); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .nav-mock-logo { display: flex; align-items: center; gap: 10px; }
+  .nav-mark { width: 28px; height: 28px; background: var(--blue); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 15px; }
+  .nav-name { font-weight: 900; color: white; font-size: 15px; }
+  .nav-links { display: flex; gap: 20px; }
+  .nav-link { font-size: 12px; color: var(--slate-light); }
+  .nav-body { background: #0A1020; padding: 20px; }
+  .nav-heading { font-size: 20px; font-weight: 900; color: white; }
+  .nav-sub { font-size: 12px; color: var(--slate-light); margin-top: 4px; }
+
+  /* CTA mockup */
+  .cta-mock { background: var(--blue); padding: 28px 24px; display: flex; flex-direction: column; }
+  .cta-badge { background: rgba(255,255,255,.15); border-radius: 20px; padding: 4px 12px; font-size: 11px; color: white; display: inline-block; margin-bottom: 12px; }
+  .cta-heading { font-size: 22px; font-weight: 900; color: white; margin-bottom: 6px; }
+  .cta-sub { font-size: 13px; color: rgba(255,255,255,.7); margin-bottom: 20px; }
+  .cta-btns { display: flex; gap: 10px; }
+  .btn-primary { background: white; color: var(--blue); padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+  .btn-secondary { background: rgba(255,255,255,.12); color: white; border: 1px solid rgba(255,255,255,.25); padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; }
+
+  /* Badges */
+  .badges { display: flex; gap: 10px; flex-wrap: wrap; }
+  .badge { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+  /* Don'ts */
+  .donts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .dont-card { border-radius: 10px; padding: 16px; }
+  .dont-card.wrong { background: #FEF2F2; border: 1px solid #FECACA; }
+  .dont-card.right { background: #F0FDF4; border: 1px solid #BBF7D0; }
+  .dont-label { font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+  .wrong .dont-label { color: #991B1B; }
+  .right .dont-label { color: #166534; }
+  .dont-content { font-size: 13px; color: var(--navy-700); }
+
+  /* Footer */
+  footer { background: var(--navy); color: var(--slate-light); text-align: center; padding: 32px; font-size: 12px; margin-top: 40px; }
+  footer strong { color: white; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-logo">
+    <div class="logo-mark">و</div>
+    <div class="logo-text">
+      <div class="ar">وضوح</div>
+      <div class="en">WUDUH</div>
+    </div>
+  </div>
+  <h1>دليل الهوية البصرية — Visual Identity Guide</h1>
+</div>
+
+<div class="container">
+
+  <!-- 1. LOGO -->
+  <div class="section">
+    <div class="section-title">01 — الشعار / Logo</div>
+
+    <div class="logo-grid">
+      <div class="logo-card dark">
+        <svg width="200" height="64" viewBox="0 0 200 64">
+          <rect x="0" y="8" width="48" height="48" rx="11" fill="#1B4FD8"/>
+          <text x="24" y="42" font-family="Arial" font-size="28" font-weight="900" fill="white" text-anchor="middle">و</text>
+          <text x="62" y="34" font-family="Arial" font-size="24" font-weight="900" fill="white" text-anchor="start">وضوح</text>
+          <text x="63" y="52" font-family="Arial" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" letter-spacing="5">WUDUH</text>
+        </svg>
+        <div class="logo-card-label">على خلفية داكنة</div>
+      </div>
+
+      <div class="logo-card light">
+        <svg width="200" height="64" viewBox="0 0 200 64">
+          <rect x="0" y="8" width="48" height="48" rx="11" fill="#0F172A"/>
+          <text x="24" y="42" font-family="Arial" font-size="28" font-weight="900" fill="#F59E0B" text-anchor="middle">و</text>
+          <text x="62" y="34" font-family="Arial" font-size="24" font-weight="900" fill="#0F172A" text-anchor="start">وضوح</text>
+          <text x="63" y="52" font-family="Arial" font-size="11" font-weight="400" fill="#94A3B8" text-anchor="start" letter-spacing="5">WUDUH</text>
+        </svg>
+        <div class="logo-card-label">على خلفية فاتحة</div>
+      </div>
+    </div>
+
+    <div class="logo-variants" style="margin-top:16px">
+      <div class="logo-card dark">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <rect x="0" y="0" width="56" height="56" rx="13" fill="#1B4FD8"/>
+          <text x="28" y="40" font-family="Arial" font-size="32" font-weight="900" fill="white" text-anchor="middle">و</text>
+        </svg>
+        <div class="logo-card-label">أيقونة</div>
+      </div>
+      <div class="logo-card dark">
+        <svg width="160" height="38" viewBox="0 0 160 38">
+          <rect x="0" y="0" width="38" height="38" rx="8" fill="#1B4FD8"/>
+          <text x="19" y="27" font-family="Arial" font-size="22" font-weight="900" fill="#F59E0B" text-anchor="middle">و</text>
+          <text x="50" y="25" font-family="Arial" font-size="20" font-weight="900" fill="white" text-anchor="start">وضوح</text>
+        </svg>
+        <div class="logo-card-label">أفقي</div>
+      </div>
+      <div class="logo-card blue">
+        <svg width="80" height="82" viewBox="0 0 80 82">
+          <rect x="16" y="0" width="48" height="48" rx="11" fill="rgba(255,255,255,.2)"/>
+          <text x="40" y="33" font-family="Arial" font-size="28" font-weight="900" fill="white" text-anchor="middle">و</text>
+          <text x="40" y="62" font-family="Arial" font-size="16" font-weight="900" fill="white" text-anchor="middle">وضوح</text>
+          <text x="40" y="78" font-family="Arial" font-size="9" font-weight="400" fill="rgba(255,255,255,.5)" text-anchor="middle" letter-spacing="4">WUDUH</text>
+        </svg>
+        <div class="logo-card-label">عمودي</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. COLORS -->
+  <div class="section">
+    <div class="section-title">02 — الألوان / Colors</div>
+
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background:#0F172A"></div>
+        <div class="color-info">
+          <div class="color-name">Navy 950</div>
+          <div class="color-hex">#0F172A</div>
+          <div class="color-role">الأساسي / الخلفية</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#1B4FD8"></div>
+        <div class="color-info">
+          <div class="color-name">Blue 700</div>
+          <div class="color-hex">#1B4FD8</div>
+          <div class="color-role">العلامة / الأزرار</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#D97706"></div>
+        <div class="color-info">
+          <div class="color-name">Amber 600</div>
+          <div class="color-hex">#D97706</div>
+          <div class="color-role">التأكيد / الذهبي</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#F8FAFC;border-bottom:1px solid #E2E8F0"></div>
+        <div class="color-info">
+          <div class="color-name">Slate 50</div>
+          <div class="color-hex">#F8FAFC</div>
+          <div class="color-role">الخلفية الفاتحة</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="shade-row" style="margin-top:20px">
+      <div class="shade" style="background:#EFF6FF"></div>
+      <div class="shade" style="background:#BFDBFE"></div>
+      <div class="shade" style="background:#93C5FD"></div>
+      <div class="shade" style="background:#60A5FA"></div>
+      <div class="shade" style="background:#3B82F6"></div>
+      <div class="shade" style="background:#1B4FD8"></div>
+      <div class="shade" style="background:#1E40AF"></div>
+      <div class="shade" style="background:#1E3A8A"></div>
+      <div class="shade" style="background:#0F172A"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-family:monospace;font-size:11px;color:#94A3B8">
+      <span>50</span><span>100</span><span>200</span><span>300</span><span>400</span><span>600</span><span>700</span><span>800</span><span>950</span>
+    </div>
+  </div>
+
+  <!-- 3. TYPOGRAPHY -->
+  <div class="section">
+    <div class="section-title">03 — الخطوط / Typography</div>
+
+    <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:24px">
+      <div class="type-row">
+        <div style="font-size:32px;font-weight:900;color:var(--navy)">وضوح — الوضوح في كل مشروع</div>
+        <div class="type-meta">32px · Black 900</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:24px;font-weight:700;color:var(--navy)">إدارة المشاريع بالذكاء الاصطناعي</div>
+        <div class="type-meta">24px · Bold 700</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:18px;font-weight:600;color:var(--navy)">وثائق PMBOK 7 احترافية في دقائق</div>
+        <div class="type-meta">18px · Semibold 600</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:15px;font-weight:400;color:var(--navy-700)">ميثاق المشروع · سجل المخاطر · مخطط Gantt · تقارير الحالة</div>
+        <div class="type-meta">15px · Regular 400</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:13px;font-weight:400;color:var(--slate)">استكشف كيف يمكن لوضوح تحويل إدارة مشاريعك إلى تجربة أكثر كفاءة واحترافية</div>
+        <div class="type-meta">13px · Regular 400</div>
+      </div>
+      <div class="type-row" style="border:none">
+        <div style="font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-light)">WUDUH · PROJECT MANAGEMENT · AI POWERED · PMBOK 7</div>
+        <div class="type-meta">11px · Medium caps</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. SPACING -->
+  <div class="section">
+    <div class="section-title">04 — الحجوم والمسافات / Spacing Scale</div>
+    <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:24px">
+      <div class="spacing-row"><div class="spacing-label">4px</div><div class="spacing-bar" style="width:4px"></div><div class="spacing-desc">داخلي ضيق (xs)</div></div>
+      <div class="spacing-row"><div class="spacing-label">8px</div><div class="spacing-bar" style="width:8px"></div><div class="spacing-desc">بين العناصر الصغيرة (sm)</div></div>
+      <div class="spacing-row"><div class="spacing-label">12px</div><div class="spacing-bar" style="width:12px"></div><div class="spacing-desc">داخل البطاقات (md)</div></div>
+      <div class="spacing-row"><div class="spacing-label">16px</div><div class="spacing-bar" style="width:16px"></div><div class="spacing-desc">بين المكونات (lg)</div></div>
+      <div class="spacing-row"><div class="spacing-label">24px</div><div class="spacing-bar" style="width:24px"></div><div class="spacing-desc">أقسام داخلية (xl)</div></div>
+      <div class="spacing-row"><div class="spacing-label">32px</div><div class="spacing-bar" style="width:32px"></div><div class="spacing-desc">هوامش الصفحة (2xl)</div></div>
+      <div class="spacing-row" style="border:none"><div class="spacing-label">48px</div><div class="spacing-bar" style="width:48px"></div><div class="spacing-desc">بين الأقسام الكبيرة (3xl)</div></div>
+    </div>
+  </div>
+
+  <!-- 5. BADGES -->
+  <div class="section">
+    <div class="section-title">05 — العلامات والشارات / Badges & Tags</div>
+    <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:24px">
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;color:var(--slate);margin-bottom:12px">خطط الاشتراك</div>
+        <div class="badges">
+          <span class="badge" style="background:#EFF6FF;color:#1E40AF">مجاني</span>
+          <span class="badge" style="background:#DBEAFE;color:#1E3A8A">مبتدئ</span>
+          <span class="badge" style="background:#1B4FD8;color:white">احترافي</span>
+          <span class="badge" style="background:#0F172A;color:#F59E0B">مؤسسي ✦</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--slate);margin-bottom:12px">حالة المشاريع</div>
+        <div class="badges">
+          <span class="badge" style="background:#F8FAFC;color:#64748B;border:1px solid #E2E8F0">مسودة</span>
+          <span class="badge" style="background:#EFF6FF;color:#1B4FD8">◉ قيد التخطيط</span>
+          <span class="badge" style="background:#FFF7ED;color:#C2410C">◉ نشط</span>
+          <span class="badge" style="background:#F0FDF4;color:#166534">✓ مكتمل</span>
+          <span class="badge" style="background:#FEF2F2;color:#991B1B">⚠ متأخر</span>
+          <span class="badge" style="background:#FAFAFA;color:#71717A">متوقف</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. APPLICATIONS -->
+  <div class="section">
+    <div class="section-title">06 — تطبيقات الهوية / Brand Applications</div>
+    <div class="mockup-grid">
+
+      <div class="mockup-card">
+        <div class="nav-mock">
+          <div class="nav-mock-logo">
+            <div class="nav-mark">و</div>
+            <div class="nav-name">وضوح</div>
+          </div>
+          <div class="nav-links">
+            <span class="nav-link">المشاريع</span>
+            <span class="nav-link">التقارير</span>
+            <span class="nav-link">الإعدادات</span>
+          </div>
+        </div>
+        <div class="nav-body">
+          <div class="nav-heading">مشاريعي</div>
+          <div class="nav-sub">3 مشاريع نشطة · آخر تحديث: اليوم</div>
+        </div>
+      </div>
+
+      <div class="mockup-card cta-mock">
+        <span class="cta-badge">✦ أول منصة عربية لـ PMBOK 7</span>
+        <div class="cta-heading">ابدأ مجاناً اليوم</div>
+        <div class="cta-sub">وثائق مشروعك الكاملة في دقائق بالذكاء الاصطناعي</div>
+        <div class="cta-btns">
+          <span class="btn-primary">ابدأ مجاناً</span>
+          <span class="btn-secondary">تعرف أكثر</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. DO / DON'T -->
+  <div class="section">
+    <div class="section-title">07 — الاستخدام الصحيح / Do & Don't</div>
+    <div class="donts-grid">
+      <div class="dont-card right">
+        <div class="dont-label">✓ صحيح</div>
+        <div class="dont-content">استخدم الشعار على خلفية داكنة (navy) أو فاتحة نظيفة</div>
+      </div>
+      <div class="dont-card wrong">
+        <div class="dont-label">✗ خاطئ</div>
+        <div class="dont-content">لا تضع الشعار على خلفيات ملونة أو صور مشوشة</div>
+      </div>
+      <div class="dont-card right">
+        <div class="dont-label">✓ صحيح</div>
+        <div class="dont-content">حافظ على نسب الشعار عند تكبيره أو تصغيره</div>
+      </div>
+      <div class="dont-card wrong">
+        <div class="dont-label">✗ خاطئ</div>
+        <div class="dont-content">لا تمدد أو تضغط الشعار أفقياً أو رأسياً</div>
+      </div>
+      <div class="dont-card right">
+        <div class="dont-label">✓ صحيح</div>
+        <div class="dont-content">استخدم فراغاً كافياً حول الشعار (≥ نصف ارتفاع العلامة)</div>
+      </div>
+      <div class="dont-card wrong">
+        <div class="dont-label">✗ خاطئ</div>
+        <div class="dont-content">لا تضيف ظلالاً أو تأثيرات على الشعار الأساسي</div>
+      </div>
+      <div class="dont-card right">
+        <div class="dont-label">✓ صحيح</div>
+        <div class="dont-content">الأزرق #1B4FD8 فقط للأزرار والعناصر التفاعلية الرئيسية</div>
+      </div>
+      <div class="dont-card wrong">
+        <div class="dont-label">✗ خاطئ</div>
+        <div class="dont-content">لا تستخدم درجات ألوان خارج النظام المحدد</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. ASSETS TABLE -->
+  <div class="section">
+    <div class="section-title">08 — ملخص الهوية / Brand Summary</div>
+    <div style="background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <tr style="background:var(--gray-50)">
+          <th style="padding:12px 16px;text-align:right;font-size:12px;font-weight:600;color:var(--slate);border-bottom:1px solid var(--border)">العنصر</th>
+          <th style="padding:12px 16px;text-align:right;font-size:12px;font-weight:600;color:var(--slate);border-bottom:1px solid var(--border)">القيمة</th>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:12px 16px;font-size:13px;color:var(--slate)">اسم العلامة (عربي)</td>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:var(--navy)">وضوح</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--gray-50)">
+          <td style="padding:12px 16px;font-size:13px;color:var(--slate)">اسم العلامة (إنجليزي)</td>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:var(--navy)">WUDUH</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:12px 16px;font-size:13px;color:var(--slate)">اللون الأساسي</td>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:16px;height:16px;background:#0F172A;border-radius:4px"></span>#0F172A</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--gray-50)">
+          <td style="padding:12px 16px;font-size:13px;color:var(--slate)">لون العلامة</td>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:var(--navy)"><span style="display:inline-block;width:16px;height:16px;background:#1B4FD8;border-radius:4px;vertical-align:middle;margin-left:8px"></span>#1B4FD8</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:12px 16px;font-size:13px;color:var(--slate)">لون التأكيد</td>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:var(--navy)"><span style="display:inline-block;width:16px;height:16px;background:#D97706;border-radius:4px;vertical-align:middle;margin-left:8px"></span>#D97706</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--gray-50)">
+          <td style="padding:12px 16px;font-size:13px;color:var(--slate)">خط العنوان</td>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:var(--navy)">Segoe UI / Arial (Bold 700–900)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:12px 16px;font-size:13px;color:var(--slate)">خط النص</td>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:var(--navy)">Segoe UI / Arial (Regular 400)</td>
+        </tr>
+        <tr>
+          <td style="padding:12px 16px;font-size:13px;color:var(--slate)">شعار الزاوية</td>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:var(--navy)">مربع radius 10-16px · خلفية زرقاء · حرف «و» أبيض</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <strong>وضوح — WUDUH</strong> · دليل الهوية البصرية v1.0 · 2026<br>
+  <span style="margin-top:6px;display:block">جميع الحقوق محفوظة · info@nailart.sa</span>
+</footer>
+
+</body>
+</html>
