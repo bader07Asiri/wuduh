@@ -29,6 +29,7 @@ export default function NewProjectPage() {
     objectives: [""],
     constraints: "",
     assumptions: "",
+    pmbok_edition: "7",
   });
 
   const set = (field: keyof ProjectFormData, value: unknown) =>
@@ -115,7 +116,7 @@ export default function NewProjectPage() {
             <Textarea
               label="وصف المشروع"
               required
-              placeholder="اشرح مشروعك بإيجاز — ماذا سيُنجز وما هدفه"
+              placeholder="اشرح مشروعك بإيجاز"
               value={form.description}
               onChange={e => set("description", e.target.value)}
               rows={3}
@@ -177,6 +178,36 @@ export default function NewProjectPage() {
               onChange={e => set("team_size", Number(e.target.value))}
             />
 
+            {/* PMBoK Edition */}
+            <div>
+              <label className="text-sm font-semibold text-slate-700 font-arabic block mb-2">
+                إصدار PMBoK المرجعي
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {(["7", "8"] as const).map((val) => {
+                  const meta = {
+                    "7": { title: "الإصدار السابع", desc: "12 مبدأ - 8 مجالات أداء - بدون عمليات محددة" },
+                    "8": { title: "الإصدار الثامن", desc: "6 مبادئ - 7 مجالات - 40 عملية (2025)" },
+                  }[val];
+                  return (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => set("pmbok_edition", val)}
+                      className={`text-right p-4 rounded-xl border-2 transition-all ${
+                        form.pmbok_edition === val
+                          ? "border-brand-blue bg-brand-blue/5"
+                          : "border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="font-bold text-slate-900 font-arabic text-sm">{meta.title}</div>
+                      <div className="text-xs text-slate-400 font-arabic mt-1">{meta.desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <Button className="w-full" onClick={() => setStep(1)} disabled={!form.name || !form.start_date || !form.end_date}>
               التالي
             </Button>
@@ -200,7 +231,7 @@ export default function NewProjectPage() {
                   <div key={i} className="flex gap-2">
                     <Input
                       className="flex-1"
-                      placeholder={`هدف ${i + 1} — مثال: إنجاز الهيكل الإنشائي قبل نهاية الربع الأول`}
+                      placeholder={`هدف ${i + 1} - مثال: إنجاز الهيكل الإنشائي قبل نهاية الربع الأول`}
                       value={obj}
                       onChange={e => updateObjective(i, e.target.value)}
                     />
@@ -226,11 +257,11 @@ export default function NewProjectPage() {
 
             <Textarea
               label="القيود والمحددات"
-              placeholder="مثال: ميزانية محدودة، جدول زمني صارم، موارد بشرية معينة فقط..."
+              placeholder="مثال: ميزانية محدودة، جدول زمني صارم..."
               value={form.constraints ?? ""}
               onChange={e => set("constraints", e.target.value)}
               rows={3}
-              hint="اختياري — يساعد في بناء خطة أكثر واقعية"
+              hint="اختياري - يساعد في بناء خطة أكثر واقعية"
             />
 
             <Textarea
@@ -267,9 +298,10 @@ export default function NewProjectPage() {
               {[
                 { label: "اسم المشروع", value: form.name },
                 { label: "العميل", value: form.client_name || "غير محدد" },
-                { label: "المدة", value: `${form.start_date} — ${form.end_date}` },
+                { label: "المدة", value: `${form.start_date} - ${form.end_date}` },
                 { label: "الميزانية", value: form.budget ? `${form.budget.toLocaleString()} ${form.currency}` : "غير محددة" },
                 { label: "حجم الفريق", value: `${form.team_size} شخص` },
+                { label: "إصدار PMBoK", value: form.pmbok_edition === "8" ? "الثامن (2025)" : "السابع" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between text-sm font-arabic">
                   <span className="text-slate-400">{label}</span>
@@ -280,7 +312,7 @@ export default function NewProjectPage() {
                 <div className="text-slate-400 text-sm font-arabic mb-2">الأهداف:</div>
                 {form.objectives.filter(o => o.trim()).map((obj, i) => (
                   <div key={i} className="text-sm text-slate-700 font-arabic flex gap-2">
-                    <span className="text-brand-blue">•</span>
+                    <span className="text-brand-blue">*</span>
                     {obj}
                   </div>
                 ))}
@@ -291,7 +323,7 @@ export default function NewProjectPage() {
               <div className="flex items-start gap-3">
                 <Sparkles size={18} className="text-brand-blue mt-0.5 flex-shrink-0" />
                 <div className="font-arabic text-sm text-slate-700">
-                  <strong className="text-brand-blue">سيقوم وضوح بـ:</strong> بناء أجندة كاملة تشمل المراحل والمهام وتحليل المخاطر والموارد — وفق معايير PMI.
+                  <strong className="text-brand-blue">سيقوم وضوح بـ:</strong> بناء أجندة كاملة تشمل المراحل والمهام وتحليل المخاطر والموارد وفق معايير PMI.
                 </div>
               </div>
             </div>

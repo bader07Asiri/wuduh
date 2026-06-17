@@ -216,6 +216,7 @@ export interface ProjectFormData {
   objectives: string[];
   constraints?: string;
   assumptions?: string;
+  pmbok_edition?: "7" | "8";
 }
 
 // ---- Organization & Departments ----

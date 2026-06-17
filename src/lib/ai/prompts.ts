@@ -34,19 +34,36 @@ const INDUSTRY_CONTEXT: Record<Industry, string> = {
   other:          "قطاع عام: طبّق أفضل ممارسات PMBOK بشكل شامل مع مراعاة السياق المحدد للمشروع.",
 };
 
-const PMBOK_SYSTEM_CONTEXT = `
-أنت مساعد إدارة مشاريع متخصص ومعتمد، تعمل وفق معايير PMI (Project Management Institute) وإرشادات PMBOK Guide الإصدار السابع.
-
+function buildSystemContext(edition: "7" | "8" = "7"): string {
+  const editionDetails = edition === "8"
+    ? `إرشادات PMBOK Guide الإصدار الثامن (2025).
+قواعدك الصارمة:
+1. لا تخترع معلومات — كل مخرج يجب أن يكون مبنياً على المعطيات المُدخلة فقط
+2. التزم بمصطلحات PMI الرسمية في كل مخرجاتك
+3. طبّق المبادئ الستة للإصدار الثامن: Stewardship, Stakeholders, Team, Value, Systems, Leadership
+4. طبّق مجالات الأداء السبعة: Stakeholders, Team, Development Approach & Life Cycle, Planning, Project Work, Delivery, Measurement, Uncertainty
+5. طبّق العمليات الأربعين (40 Process) الموزعة على مجموعات العمليات الخمس
+6. أجب دائماً بصيغة JSON نظيفة وصحيحة بدون أي نص خارجها
+7. كل التواريخ بصيغة YYYY-MM-DD
+8. الأرقام كـ numbers لا كـ strings
+9. كن محدداً وقابلاً للتطبيق — لا عموميات`
+    : `إرشادات PMBOK Guide الإصدار السابع.
 قواعدك الصارمة:
 1. لا تخترع معلومات — كل مخرج يجب أن يكون مبنياً على المعطيات المُدخلة فقط
 2. التزم بمصطلحات PMI الرسمية في كل مخرجاتك
 3. طبّق مجموعات العمليات الخمس: Initiating, Planning, Executing, Monitoring & Controlling, Closing
-4. راعِ مجالات الأداء العشرة في PMBOK 7: Stakeholders, Team, Development Approach, Planning, Project Work, Delivery, Measurement, Uncertainty
-5. أجب دائماً بصيغة JSON نظيفة وصحيحة بدون أي نص خارجها
-6. كل التواريخ بصيغة YYYY-MM-DD
-7. الأرقام كـ numbers لا كـ strings
-8. كن محدداً وقابلاً للتطبيق — لا عموميات
-`.trim();
+4. راعِ مجالات الأداء الثمانية في PMBOK 7: Stakeholders, Team, Development Approach, Planning, Project Work, Delivery, Measurement, Uncertainty
+5. طبّق المبادئ الاثني عشر للإصدار السابع
+6. أجب دائماً بصيغة JSON نظيفة وصحيحة بدون أي نص خارجها
+7. كل التواريخ بصيغة YYYY-MM-DD
+8. الأرقام كـ numbers لا كـ strings
+9. كن محدداً وقابلاً للتطبيق — لا عموميات`;
+
+  return `أنت مساعد إدارة مشاريع متخصص ومعتمد، تعمل وفق معايير PMI (Project Management Institute) و${editionDetails}`.trim();
+}
+
+// Keep backward-compatible constant for non-project prompts
+const PMBOK_SYSTEM_CONTEXT = buildSystemContext("7");
 
 // ============================
 // 1. توليد الأجندة الكاملة
@@ -62,11 +79,12 @@ export function buildAgendaPrompt(
   const durationWeeks = Math.ceil(durationDays / 7);
 
   const industryCtx = INDUSTRY_CONTEXT[user.industry ?? "other"] ?? INDUSTRY_CONTEXT.other;
+  const edition = (project.pmbok_edition ?? "7") as "7" | "8";
 
   return {
-    system: PMBOK_SYSTEM_CONTEXT,
+    system: buildSystemContext(edition),
     user: `
-قم ببناء أجندة إدارة مشروع كاملة وفق معايير PMI/PMBOK للمشروع التالي:
+قم ببناء أجندة إدارة مشروع كاملة وفق معايير PMI/PMBOK الإصدار ${edition === "8" ? "الثامن (2025)" : "السابع"} للمشروع التالي:
 
 === السياق القطاعي (مهم جداً) ===
 ${industryCtx}
@@ -496,45 +514,59 @@ export function buildQualityPlanPrompt(project: ProjectFormData): { system: stri
   return {
     system: PMBOK_SYSTEM_CONTEXT,
     user: `
-أنشئ خطة إدارة الجودة وفق PMBOK للمشروع: ${project.name}
-القطاع: البناء والإنشاءات
+أنشئ خطة إدارة الجودة الكاملة وفق معايير PMI/ISO 21500 للمشروع: ${project.name}
+
+الوصف: ${project.description}
+الأهداف: ${project.objectives?.join(" | ") ?? ""}
 
 أنشئ JSON بالهيكل:
 {
-  "quality_policy": "سياسة الجودة",
-  "quality_objectives": ["هدف الجودة 1"],
-  "quality_standards": ["المعيار 1 (مثل ISO 9001)"],
-  "quality_roles": [
-    {"role": "مدير الجودة", "responsibilities": ["مسؤولية 1"]}
-  ],
-  "quality_activities": [
+  "quality_policy": "سياسة الجودة للمشروع",
+  "quality_objectives": ["هدف جودة 1", "هدف جودة 2"],
+  "quality_standards": [
     {
-      "activity": "اسم النشاط",
-      "type": "Quality Assurance | Quality Control",
-      "description": "وصف",
-      "frequency": "التكرار",
-      "responsible": "المسؤول",
-      "tools": ["الأداة المستخدمة"]
-    }
-  ],
-  "checklists": [
-    {
-      "checklist_name": "اسم قائمة التحقق",
-      "phase": "المرحلة",
-      "items": [
-        {"item": "بند التحقق", "criteria": "معيار القبول", "method": "طريقة التحقق"}
-      ]
+      "standard": "اسم المعيار",
+      "description": "وصف المعيار",
+      "applicability": "مجال التطبيق"
     }
   ],
   "quality_metrics": [
     {
-      "metric": "مقياس الجودة",
-      "target": "الهدف",
-      "measurement": "طريقة القياس",
-      "frequency": "التكرار"
+      "metric": "اسم المقياس",
+      "measurement_method": "طريقة القياس",
+      "target": "الهدف المستهدف",
+      "frequency": "تكرار القياس"
     }
   ],
-  "non_conformance_process": "إجراء التعامل مع عدم المطابقة"
+  "quality_assurance_activities": [
+    {
+      "activity": "نشاط ضمان الجودة",
+      "responsible": "المسؤول",
+      "timing": "التوقيت",
+      "tools": ["أداة 1", "أداة 2"]
+    }
+  ],
+  "quality_control_activities": [
+    {
+      "activity": "نشاط ضبط الجودة",
+      "responsible": "المسؤول",
+      "timing": "التوقيت",
+      "acceptance_criteria": "معايير القبول"
+    }
+  ],
+  "quality_checklists": [
+    {
+      "phase": "المرحلة",
+      "checklist_items": ["بند مراجعة 1", "بند مراجعة 2"]
+    }
+  ],
+  "roles_responsibilities": [
+    {
+      "role": "الدور",
+      "responsibilities": ["مسؤولية 1", "مسؤولية 2"]
+    }
+  ],
+  "improvement_process": "وصف عملية التحسين المستمر"
 }
 `.trim(),
   };

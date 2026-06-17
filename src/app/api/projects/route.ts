@@ -83,12 +83,12 @@ export async function POST(req: NextRequest) {
       objectives: body.objectives,
       constraints: body.constraints,
       assumptions: body.assumptions,
+      pmbok_edition: body.pmbok_edition ?? "7",
       status: "planning",
       agenda_approved: false,
     })
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ id: data.id, project: data }, { status: 201 });
 }
