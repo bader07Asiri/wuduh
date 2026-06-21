@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider clerkJSUrl={process.env.NEXT_PUBLIC_CLERK_JS_URL}>
       <html lang="ar" dir="rtl" className={`${tajawal.variable} ${montserrat.variable}`}>
         <body className="font-arabic bg-slate-50 text-slate-900 antialiased">
           {children}

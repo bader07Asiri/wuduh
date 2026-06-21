@@ -1,8 +1,10 @@
+export const runtime = "edge";
+export const maxDuration = 60;
+
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithClaude } from "@/lib/ai/client";
-import { rateLimit, LIMITS } from "@/lib/rate-limit";
 import { checkAIUsage } from "@/lib/ai/usage-guard";
 import {
   buildAgendaPrompt,
@@ -23,21 +25,6 @@ const supabase = createClient(
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  // Rate limiting (حد الطلبات في الدقيقة)
-  const rl = rateLimit(`ai:${userId}`, LIMITS.AI_GENERATE);
-  if (!rl.success) {
-    return NextResponse.json(
-      { error: "تجاوزت الحد المسموح به. حاول بعد دقيقة." },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
-          "X-RateLimit-Remaining": "0",
-        },
-      }
-    );
-  }
 
   // Usage guard (حد الاستخدام الشهري حسب الخطة)
   const usage = await checkAIUsage(userId);
@@ -98,7 +85,13 @@ export async function POST(req: NextRequest) {
       default: return NextResponse.json({ error: "Unknown generation type" }, { status: 400 });
     }
 
-    const result = await generateWithClaude({ ...prompt, maxTokens: 8000 });
+    // Use Haiku for agenda (faster, stays within 30s Edge limit)
+    // Use Sonnet for other deliverables (richer output, still within limit)
+    const result = await generateWithClaude({
+      ...prompt,
+      maxTokens: type === "agenda" ? 2000 : 4000,
+      model: type === "agenda" ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-6",
+    });
 
     // Save agenda back to project
     if (type === "agenda") {

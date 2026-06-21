@@ -8,13 +8,14 @@ export interface AIGenerateOptions {
   system: string;
   user: string;
   maxTokens?: number;
+  model?: string;
 }
 
 export async function generateWithClaude(options: AIGenerateOptions): Promise<object> {
-  const { system, user, maxTokens = 8000 } = options;
+  const { system, user, maxTokens = 8000, model = "claude-sonnet-4-6" } = options;
 
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
+    model,
     max_tokens: maxTokens,
     system,
     messages: [{ role: "user", content: user }],

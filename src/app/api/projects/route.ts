@@ -90,5 +90,10 @@ export async function POST(req: NextRequest) {
     .select()
     .single();
 
+  if (error || !data) {
+    console.error("Project insert error:", error);
+    return NextResponse.json({ error: error?.message ?? "Failed to create project" }, { status: 500 });
+  }
+
   return NextResponse.json({ id: data.id, project: data }, { status: 201 });
 }

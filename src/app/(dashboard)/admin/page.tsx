@@ -610,4 +610,59 @@ function ThemeTab() {
                     }}
                   />
                   {uploadingLogo ? (
-                    <span className="text-sm font-arabic tex
+                    <span className="text-sm font-arabic text-brand-blue">جاري الرفع...</span>
+                  ) : (
+                    <>
+                      <Upload size={16} className="text-slate-400" />
+                      <span className="text-sm font-arabic text-slate-600">اضغط لرفع صورة (PNG, JPG, SVG, WebP — max 2MB)</span>
+                    </>
+                  )}
+                </label>
+                <Input
+                  placeholder="أو أدخل رابط الشعار مباشرة"
+                  value={settings.logo_url}
+                  onChange={e => set("logo_url", e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-arabic font-semibold text-slate-700 block mb-1">الخط العربي</label>
+              <select
+                value={settings.font_arabic}
+                onChange={e => set("font_arabic", e.target.value)}
+                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-arabic bg-white focus:outline-none focus:border-brand-blue"
+              >
+                {["Tajawal", "Cairo", "Noto Kufi Arabic", "Amiri"].map(f => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-arabic font-semibold text-slate-700 block mb-1">الخط الإنجليزي</label>
+              <select
+                value={settings.font_latin}
+                onChange={e => set("font_latin", e.target.value)}
+                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-arabic bg-white focus:outline-none focus:border-brand-blue"
+              >
+                {["Montserrat", "Inter", "Poppins", "Roboto", "Open Sans"].map(f => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-3">
+        <Button variant="ghost" icon={<RotateCcw size={16} />} onClick={reset}>
+          إعادة الضبط
+        </Button>
+        <Button icon={<Save size={16} />} loading={saving} onClick={save} className="flex-1">
+          حفظ الإعدادات
+        </Button>
+      </div>
+    </div>
+  );
+}

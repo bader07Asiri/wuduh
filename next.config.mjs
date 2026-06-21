@@ -46,6 +46,39 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/clerk-js",
+        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/clerk.browser.js",
+      },
+      {
+        source: "/framework_clerk.browser_dc50cf_5.125.13.js",
+        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/framework_clerk.browser_dc50cf_5.125.13.js",
+      },
+      {
+        source: "/vendors_clerk.browser_dc50cf_5.125.13.js",
+        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/vendors_clerk.browser_dc50cf_5.125.13.js",
+      },
+      {
+        source: "/ui-common_clerk.browser_dc50cf_5.125.13.js",
+        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/ui-common_clerk.browser_dc50cf_5.125.13.js",
+      },
+      {
+        source: "/signin_clerk.browser_dc50cf_5.125.13.js",
+        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/signin_clerk.browser_dc50cf_5.125.13.js",
+      },
+      {
+        source: "/signup_clerk.browser_dc50cf_5.125.13.js",
+        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/signup_clerk.browser_dc50cf_5.125.13.js",
+      },
+      {
+        source: "/subscriptionDetails_clerk.browser_dc50cf_5.125.13.js",
+        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/subscriptionDetails_clerk.browser_dc50cf_5.125.13.js",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
+// Updated: env vars configured

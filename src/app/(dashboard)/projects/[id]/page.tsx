@@ -136,6 +136,20 @@ export default function ProjectPage() {
         </Card>
       )}
 
+      {/* No Agenda + Not Generating = generation failed, show retry */}
+      {!agenda && !generating && (
+        <Card className="text-center py-16">
+          <Sparkles size={40} className="text-slate-300 mx-auto mb-4" />
+          <h3 className="text-xl font-black text-slate-900 font-arabic mb-2">الأجندة لم تُولَّد بعد</h3>
+          <p className="text-slate-400 font-arabic text-sm mb-6">
+            اضغط الزر أدناه ليبدأ وضوح في بناء خطة المشروع
+          </p>
+          <Button icon={<Sparkles size={18} />} onClick={generateAgenda}>
+            ابنِ الأجندة الآن
+          </Button>
+        </Card>
+      )}
+
       {/* Agenda */}
       {agenda && !generating && (
         <div className="space-y-6">

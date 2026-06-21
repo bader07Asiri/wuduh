@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "info@nailart.sa";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "Bader.s.alasiri@gmail.com";
 
 async function verifyAdmin(userId: string) {
   const supabase = createAdminClient();
