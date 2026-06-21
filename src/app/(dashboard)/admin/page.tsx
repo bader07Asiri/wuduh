@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import {
   Users, FolderOpen, FileText, Building2,
   TrendingUp, Crown, Zap, Star, Shield,
-  Search, Palette, RotateCcw, Save, ChevronDown
+  Search, Palette, RotateCcw, Save, ChevronDown, Upload, ImageIcon
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -454,6 +454,7 @@ function ThemeTab() {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -465,6 +466,23 @@ function ThemeTab() {
 
   const set = (key: keyof SiteSettings, value: string) =>
     setSettings(prev => ({ ...prev, [key]: value }));
+
+  const uploadLogo = async (file: File) => {
+    setUploadingLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "فشل الرفع");
+      set("logo_url", data.url);
+      toast.success("تم رفع الشعار بنجاح");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "فشل رفع الشعار");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const save = async () => {
     setSaving(true);
@@ -571,50 +589,25 @@ function ThemeTab() {
               <Input value={settings.site_name_en} onChange={e => set("site_name_en", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-arabic font-semibold text-slate-700 block mb-1">رابط الشعار (URL)</label>
-              <Input
-                placeholder="https://example.com/logo.png"
-                value={settings.logo_url}
-                onChange={e => set("logo_url", e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-arabic font-semibold text-slate-700 block mb-1">الخط العربي</label>
-              <select
-                value={settings.font_arabic}
-                onChange={e => set("font_arabic", e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-arabic bg-white focus:outline-none focus:border-brand-blue"
-              >
-                {["Tajawal", "Cairo", "Noto Kufi Arabic", "Amiri"].map(f => (
-                  <option key={f} value={f}>{f}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-arabic font-semibold text-slate-700 block mb-1">الخط الإنجليزي</label>
-              <select
-                value={settings.font_latin}
-                onChange={e => set("font_latin", e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-arabic bg-white focus:outline-none focus:border-brand-blue"
-              >
-                {["Montserrat", "Inter", "Poppins", "Roboto", "Open Sans"].map(f => (
-                  <option key={f} value={f}>{f}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-3">
-        <Button variant="ghost" icon={<RotateCcw size={16} />} onClick={reset}>
-          إعادة الضبط
-        </Button>
-        <Button icon={<Save size={16} />} loading={saving} onClick={save} className="flex-1">
-          حفظ الإعدادات
-        </Button>
-      </div>
-    </div>
-  );
-}
+              <label className="text-sm font-arabic font-semibold text-slate-700 block mb-1">شعار الموقع</label>
+              <div className="flex flex-col gap-2">
+                {settings.logo_url && (
+                  <div className="flex items-center gap-2 p-2 border border-slate-200 rounded-xl bg-slate-50">
+                    <img src={settings.logo_url} alt="Logo" className="h-10 w-auto object-contain" />
+                    <span className="text-xs text-slate-500 truncate flex-1">{settings.logo_url}</span>
+                  </div>
+                )}
+                <label className={`flex items-center gap-2 cursor-pointer border-2 border-dashed rounded-xl px-4 py-3 transition-colors ${uploadingLogo ? "border-brand-blue bg-blue-50" : "border-slate-300 hover:border-brand-blue hover:bg-blue-50"}`}>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                    className="hidden"
+                    disabled={uploadingLogo}
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadLogo(file);
+                      e.target.value = "";
+                    }}
+                  />
+                  {uploadingLogo ? (
+                    <span className="text-sm font-arabic tex
