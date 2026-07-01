@@ -12,7 +12,7 @@ export interface AIGenerateOptions {
 }
 
 export async function generateWithClaude(options: AIGenerateOptions): Promise<object> {
-  const { system, user, maxTokens = 8000, model = "claude-sonnet-4-6" } = options;
+  const { system, user, maxTokens = 8000, model = "claude-sonnet-4-5" } = options;
 
   const response = await anthropic.messages.create({
     model,
@@ -43,7 +43,7 @@ export async function streamWithClaude(
   let fullText = "";
 
   const stream = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
+    model: "claude-sonnet-4-5",
     max_tokens: maxTokens,
     system,
     messages: [{ role: "user", content: user }],

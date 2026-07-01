@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
-const ADMIN_EMAIL = "Bader.s.alasiri@gmail.com";
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "";
 
 const navItems = [
   { label: "لوحة التحكم", href: "/dashboard",    icon: LayoutDashboard },

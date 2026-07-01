@@ -2,7 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "Bader.s.alasiri@gmail.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "";
 
 async function verifyAdmin(userId: string): Promise<boolean> {
   const user = await currentUser();

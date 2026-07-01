@@ -18,7 +18,7 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://wuduh.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://wuduh-app.vercel.app";
 
 export const metadata: Metadata = {
   title: "وضوح | Wuduh - إدارة مشاريع باحترافية PMP",

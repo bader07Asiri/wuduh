@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
     const result = await generateWithClaude({
       ...prompt,
       maxTokens: type === "agenda" ? 2000 : 4000,
-      model: type === "agenda" ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-6",
+      model: type === "agenda" ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-5",
     });
 
     // Save agenda back to project
