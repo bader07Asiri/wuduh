@@ -77,7 +77,7 @@ export function Pricing() {
                   </h3>
                   <div className="flex items-baseline gap-1 mb-3">
                     <span className={cn("text-4xl font-black font-latin", isPopular ? "text-white" : "text-slate-900")}>
-                      ${Math.round(price)}
+                      {Math.round(price)} ر.س
                     </span>
                     <span className={cn("text-sm font-arabic", isPopular ? "text-white/60" : "text-slate-400")}>
                       / شهر
@@ -85,7 +85,7 @@ export function Pricing() {
                   </div>
                   {annual && (
                     <div className={cn("text-xs font-arabic", isPopular ? "text-white/60" : "text-slate-400")}>
-                      يُفوتر سنوياً — ${plan.price_yearly}
+                      يُفوتر سنوياً — {plan.price_yearly} ر.س
                     </div>
                   )}
                 </div>

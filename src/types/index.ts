@@ -265,9 +265,9 @@ export const PLANS = {
   starter: {
     name: "Starter",
     name_ar: "المبتدئ",
-    price_monthly: 29,
-    price_yearly: 290,
-    currency: "USD",
+    price_monthly: 109,
+    price_yearly: 1090,
+    currency: "SAR",
     max_projects: 3,
     features: [
       "3 مشاريع نشطة",
@@ -279,9 +279,9 @@ export const PLANS = {
   professional: {
     name: "Professional",
     name_ar: "الاحترافي",
-    price_monthly: 79,
-    price_yearly: 790,
-    currency: "USD",
+    price_monthly: 299,
+    price_yearly: 2990,
+    currency: "SAR",
     max_projects: 15,
     features: [
       "15 مشروع نشط",
@@ -294,9 +294,9 @@ export const PLANS = {
   enterprise: {
     name: "Enterprise",
     name_ar: "المؤسسي",
-    price_monthly: 199,
-    price_yearly: 1990,
-    currency: "USD",
+    price_monthly: 749,
+    price_yearly: 7490,
+    currency: "SAR",
     max_projects: -1, // unlimited
     features: [
       "مشاريع غير محدودة",

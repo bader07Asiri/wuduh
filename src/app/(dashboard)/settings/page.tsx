@@ -104,7 +104,7 @@ export default function SettingsPage() {
                 <div className="mb-4">
                   <h3 className="font-black text-slate-900 font-arabic text-lg">{plan.name_ar}</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black font-latin text-slate-900">${plan.price_monthly}</span>
+                    <span className="text-3xl font-black font-latin text-slate-900">{plan.price_monthly} ر.س</span>
                     <span className="text-slate-400 text-xs font-arabic">/ شهر</span>
                   </div>
                 </div>
