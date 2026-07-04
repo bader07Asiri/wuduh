@@ -4,8 +4,8 @@
   "outputDirectory": ".next",
   "regions": ["iad1"],
   "functions": {
-    "src/app/api/ai/**": { "maxDuration": 60 },
-    "src/app/api/deliverables/**": { "maxDuration": 60 }
+    "src/app/api/ai/**": { "maxDuration": 300 },
+    "src/app/api/deliverables/**": { "maxDuration": 300 }
   },
   "headers": [
     {
