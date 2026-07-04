@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Tajawal, Montserrat } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
+import { clerkArabic } from "@/lib/clerk-ar";
 import "./globals.css";
 
 const tajawal = Tajawal({
@@ -29,6 +30,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     shortcut: "/favicon.svg",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     title: "وضوح | Wuduh - إدارة مشاريع باحترافية PMP",
@@ -39,7 +41,7 @@ export const metadata: Metadata = {
     siteName: "وضوح | Wuduh",
     images: [
       {
-        url: "/og-image.svg",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Wuduh - منصة إدارة المشاريع",
@@ -50,13 +52,13 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "وضوح | Wuduh",
     description: "إدارة مشاريعك باحترافية PMP - بدون مدير مشاريع",
-    images: ["/og-image.svg"],
+    images: ["/og-image.png"],
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider clerkJSUrl={process.env.NEXT_PUBLIC_CLERK_JS_URL}>
+    <ClerkProvider localization={clerkArabic}>
       <html lang="ar" dir="rtl" className={`${tajawal.variable} ${montserrat.variable}`}>
         <body className="font-arabic bg-slate-50 text-slate-900 antialiased">
           {children}

@@ -27,60 +27,15 @@ const bottomItems = [
   { label: "الإعدادات", href: "/settings", icon: Settings },
 ];
 
-/* ── Wuduh 3D Orbital Logo Icon ──────────────────────────── */
-function WuduhIcon({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="sb-orb" cx="38%" cy="32%" r="65%">
-          <stop offset="0%" stopColor="#7EC8FF" />
-          <stop offset="35%" stopColor="#2563EB" />
-          <stop offset="75%" stopColor="#1E3A80" />
-          <stop offset="100%" stopColor="#0F172A" />
-        </radialGradient>
-        <linearGradient id="sb-r1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#64748B" stopOpacity="0.9" />
-          <stop offset="50%" stopColor="#94A3B8" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#334155" stopOpacity="0.8" />
-        </linearGradient>
-        <linearGradient id="sb-r2" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#475569" stopOpacity="0.95" />
-          <stop offset="50%" stopColor="#CBD5E1" stopOpacity="0.7" />
-          <stop offset="100%" stopColor="#1E293B" stopOpacity="0.9" />
-        </linearGradient>
-        <linearGradient id="sb-r3" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#334155" />
-          <stop offset="50%" stopColor="#E2E8F0" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#0F172A" />
-        </linearGradient>
-        <filter id="sb-glow">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-      {/* Outer ring */}
-      <ellipse cx="60" cy="60" rx="54" ry="20" stroke="url(#sb-r1)" strokeWidth="9" fill="none" transform="rotate(-20 60 60)" strokeLinecap="round" />
-      {/* Middle ring */}
-      <ellipse cx="60" cy="60" rx="42" ry="15" stroke="url(#sb-r2)" strokeWidth="10" fill="none" transform="rotate(-20 60 60)" strokeLinecap="round" />
-      {/* Inner ring */}
-      <ellipse cx="60" cy="60" rx="30" ry="11" stroke="url(#sb-r3)" strokeWidth="9" fill="none" transform="rotate(-20 60 60)" strokeLinecap="round" />
-      {/* Sphere */}
-      <circle cx="60" cy="60" r="26" fill="url(#sb-orb)" filter="url(#sb-glow)" />
-      {/* Specular highlight */}
-      <ellipse cx="51" cy="50" rx="9" ry="6.5" fill="white" opacity="0.18" transform="rotate(-30 51 50)" />
-      {/* Rim light */}
-      <ellipse cx="63" cy="73" rx="10" ry="4" fill="#38BDF8" opacity="0.20" transform="rotate(-10 63 73)" />
-    </svg>
-  );
-}
-
 export function Sidebar() {
   const pathname = usePathname();
   const { signOut } = useClerk();
   const { user } = useUser();
   const [orgName, setOrgName] = useState<string | null>(null);
 
-  const isAdmin = user?.emailAddresses?.some(e => e.emailAddress === ADMIN_EMAIL);
+  const isAdmin = user?.emailAddresses?.some(
+    e => e.emailAddress.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+  );
 
   useEffect(() => {
     fetch("/api/org")
@@ -93,12 +48,11 @@ export function Sidebar() {
     <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-navy-950 border-l border-white/10 fixed right-0 top-0">
 
       {/* ── Logo ──────────────────────────────────────── */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
-        <WuduhIcon size={42} />
-        <div>
-          <div className="font-brand font-black text-white text-lg tracking-widest leading-none">WUDUH</div>
-          <div className="text-white/40 text-[10px] font-arabic tracking-wider mt-0.5">CLARITY IN EVERY PROJECT</div>
-        </div>
+      <div className="flex items-center justify-center px-5 py-4 border-b border-white/10">
+        <Link href="/dashboard">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-full.png" alt="وضوح Wuduh" className="h-12 w-auto object-contain" />
+        </Link>
       </div>
 
       {/* ── Main Nav ──────────────────────────────────── */}

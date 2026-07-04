@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Build a self-contained server bundle for Docker / self-hosting (Coolify, VPS)
+  output: "standalone",
   experimental: {
     serverActions: { allowedOrigins: ["localhost:3000", process.env.NEXT_PUBLIC_APP_URL].filter(Boolean) },
   },
@@ -24,12 +26,13 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net https://*.clerk.accounts.dev https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://api.stripe.com https://api.anthropic.com https://clerk.accounts.dev https://*.clerk.accounts.dev wss://*.supabase.co",
-              "frame-src https://js.stripe.com",
+              "connect-src 'self' https://*.supabase.co https://api.stripe.com https://api.anthropic.com https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk-telemetry.com wss://*.supabase.co",
+              "worker-src 'self' blob:",
+              "frame-src https://js.stripe.com https://challenges.cloudflare.com https://*.clerk.accounts.dev",
               "object-src 'none'",
               "base-uri 'self'",
             ].join("; "),
@@ -46,39 +49,6 @@ const nextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      {
-        source: "/clerk-js",
-        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/clerk.browser.js",
-      },
-      {
-        source: "/framework_clerk.browser_dc50cf_5.125.13.js",
-        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/framework_clerk.browser_dc50cf_5.125.13.js",
-      },
-      {
-        source: "/vendors_clerk.browser_dc50cf_5.125.13.js",
-        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/vendors_clerk.browser_dc50cf_5.125.13.js",
-      },
-      {
-        source: "/ui-common_clerk.browser_dc50cf_5.125.13.js",
-        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/ui-common_clerk.browser_dc50cf_5.125.13.js",
-      },
-      {
-        source: "/signin_clerk.browser_dc50cf_5.125.13.js",
-        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/signin_clerk.browser_dc50cf_5.125.13.js",
-      },
-      {
-        source: "/signup_clerk.browser_dc50cf_5.125.13.js",
-        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/signup_clerk.browser_dc50cf_5.125.13.js",
-      },
-      {
-        source: "/subscriptionDetails_clerk.browser_dc50cf_5.125.13.js",
-        destination: "https://rational-grackle-53.clerk.accounts.dev/npm/@clerk/clerk-js@5.125.13/dist/subscriptionDetails_clerk.browser_dc50cf_5.125.13.js",
-      },
-    ];
-  },
 };
 
 export default nextConfig;
-// Updated: env vars configured

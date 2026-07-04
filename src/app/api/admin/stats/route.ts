@@ -16,7 +16,7 @@ export async function GET() {
     .eq("clerk_id", userId)
     .single();
 
-  if (!profile || profile.email !== ADMIN_EMAIL) {
+  if (!profile?.email || profile.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

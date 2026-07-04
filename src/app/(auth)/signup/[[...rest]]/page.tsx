@@ -5,14 +5,9 @@ export default function SignupPage() {
     <div className="min-h-screen bg-brand-gradient flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center text-white font-black text-2xl font-arabic shadow-lg">
-            و
-          </div>
-          <div>
-            <div className="text-white font-black text-2xl font-arabic leading-none">وضوح</div>
-            <div className="text-white/40 text-xs font-latin tracking-[3px] uppercase">WUDUH</div>
-          </div>
+        <div className="flex justify-center mb-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-full.png" alt="وضوح Wuduh" className="h-20 w-auto object-contain drop-shadow-lg" />
         </div>
 
         <SignUp

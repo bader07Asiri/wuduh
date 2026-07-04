@@ -21,7 +21,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="وضوح Wuduh" className="h-9 w-auto object-contain" />
+            <img src="/logo-full.png" alt="وضوح Wuduh" className="h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.03]" />
           </Link>
 
           {/* Desktop Nav */}

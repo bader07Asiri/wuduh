@@ -10,7 +10,7 @@ export function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="وضوح Wuduh" className="h-10 w-auto object-contain" />
+              <img src="/logo-full.png" alt="وضوح Wuduh" className="h-12 w-auto object-contain" />
             </div>
             <p className="text-sm font-arabic leading-relaxed max-w-xs text-white/50">
               إدارة مشاريعك باحترافية PMP — بدون مدير مشاريع. وفق معايير PMI العالمية.

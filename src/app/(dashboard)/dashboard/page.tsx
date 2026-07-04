@@ -5,10 +5,20 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-// سيُستبدل بـ fetch حقيقي من Supabase
 async function getProjects(userId: string) {
-  return []; // placeholder
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("[dashboard] failed to fetch projects:", error.message);
+    return [];
+  }
+  return data ?? [];
 }
 
 const statusConfig = {
@@ -24,11 +34,14 @@ export default async function DashboardPage() {
   const { userId } = await auth();
   const projects = await getProjects(userId!);
 
+  const countByStatus = (statuses: string[]) =>
+    projects.filter((p: any) => statuses.includes(p.status)).length;
+
   const stats = [
     { label: "إجمالي المشاريع", value: projects.length, icon: FolderOpen, color: "text-brand-blue bg-blue-50" },
-    { label: "مشاريع نشطة", value: 0, icon: TrendingUp, color: "text-emerald-500 bg-emerald-50" },
-    { label: "قيد الإنجاز", value: 0, icon: Clock, color: "text-brand-cyan bg-brand-cyan/10" },
-    { label: "مكتملة", value: 0, icon: CheckCircle, color: "text-purple-600 bg-purple-50" },
+    { label: "مشاريع نشطة", value: countByStatus(["active"]), icon: TrendingUp, color: "text-emerald-500 bg-emerald-50" },
+    { label: "قيد الإنجاز", value: countByStatus(["draft", "planning", "on_hold"]), icon: Clock, color: "text-brand-cyan bg-brand-cyan/10" },
+    { label: "مكتملة", value: countByStatus(["completed"]), icon: CheckCircle, color: "text-purple-600 bg-purple-50" },
   ];
 
   return (
@@ -85,7 +98,7 @@ export default async function DashboardPage() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {(projects as any[]).map((project) => (
+            {(projects as any[]).slice(0, 5).map((project) => (
               <Link key={project.id} href={`/projects/${project.id}`}>
                 <Card hover className="flex items-center justify-between">
                   <div className="flex items-center gap-4">

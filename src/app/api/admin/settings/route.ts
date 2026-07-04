@@ -11,7 +11,7 @@ async function verifyAdmin(userId: string) {
     .select("email")
     .eq("clerk_id", userId)
     .single();
-  return data?.email === ADMIN_EMAIL;
+  return !!data?.email && data.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 }
 
 // GET /api/admin/settings — returns all site settings as { key: value }
