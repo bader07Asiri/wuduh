@@ -1,4 +1,4 @@
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const maxDuration = 60;
 
 import { auth } from "@clerk/nextjs/server";
@@ -89,8 +89,8 @@ export async function POST(req: NextRequest) {
     // Use Sonnet for other deliverables (richer output, still within limit)
     const result = await generateWithClaude({
       ...prompt,
-      maxTokens: type === "agenda" ? 2000 : 4000,
-      model: type === "agenda" ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-5",
+      maxTokens: type === "agenda" ? 4000 : 6000,
+      model: "claude-haiku-4-5-20251001",
     });
 
     // Save agenda back to project

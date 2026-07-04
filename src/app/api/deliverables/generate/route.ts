@@ -96,12 +96,6 @@ export async function POST(req: NextRequest) {
   if (!project.agenda_approved)
     return NextResponse.json({ error: "Agenda not approved yet" }, { status: 400 });
 
-  const { data: userProfile } = await supabase
-    .from("user_profiles")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-
   const projectForm = {
     name: project.name,
     description: project.description,
@@ -156,7 +150,11 @@ export async function POST(req: NextRequest) {
         const builder = promptBuilders[type];
         if (builder) {
           try {
-            aiData = (await generateWithClaude({ ...builder(), maxTokens: 6000 })) as Record<string, unknown>;
+            aiData = (await generateWithClaude({
+              ...builder(),
+              maxTokens: 6000,
+              model: "claude-haiku-4-5-20251001",
+            })) as Record<string, unknown>;
           } catch {
             // Fall back to agenda data if AI call fails
             aiData = agendaData;

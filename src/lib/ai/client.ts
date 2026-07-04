@@ -21,6 +21,12 @@ export async function generateWithClaude(options: AIGenerateOptions): Promise<ob
     messages: [{ role: "user", content: user }],
   });
 
+  if (response.stop_reason === "max_tokens") {
+    throw new Error(
+      "الاستجابة تجاوزت الحد الأقصى للطول ولم تكتمل — أعد المحاولة أو قلّل حجم المشروع"
+    );
+  }
+
   const text = response.content[0].type === "text" ? response.content[0].text : "";
 
   // Extract JSON from response (Claude sometimes wraps in ```json)
