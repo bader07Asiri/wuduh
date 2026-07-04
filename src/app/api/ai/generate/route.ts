@@ -85,11 +85,11 @@ export async function POST(req: NextRequest) {
       default: return NextResponse.json({ error: "Unknown generation type" }, { status: 400 });
     }
 
-    // Use Haiku for agenda (faster, stays within 30s Edge limit)
-    // Use Sonnet for other deliverables (richer output, still within limit)
+    // Haiku 4.5: fast + cheap. 8000 tokens gives full agendas (Arabic JSON is
+    // token-heavy — 4000 was truncating long projects mid-JSON).
     const result = await generateWithClaude({
       ...prompt,
-      maxTokens: type === "agenda" ? 4000 : 6000,
+      maxTokens: 8000,
       model: "claude-haiku-4-5-20251001",
     });
 

@@ -61,11 +61,11 @@ export default function ProjectPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId: id, type: "agenda" }),
       });
-      if (!res.ok) throw new Error();
       const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "خطأ في توليد الأجندة، حاول مرة أخرى");
       setProject(data.project);
-    } catch {
-      toast.error("خطأ في توليد الأجندة، حاول مرة أخرى");
+    } catch (err) {
+      toast.error(err instanceof Error && err.message ? err.message : "خطأ في توليد الأجندة، حاول مرة أخرى");
     } finally {
       setGenerating(false);
     }
