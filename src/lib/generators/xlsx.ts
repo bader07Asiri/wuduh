@@ -4,11 +4,14 @@
 // ============================
 
 import ExcelJS from "exceljs";
+import { getTheme } from "@/lib/themes";
+import type { GenOptions } from "./types";
+
 
 // Brand colors
-const NAVY    = "0F2057";
-const PRIMARY = "2563EB";
-const ACCENT  = "0EA5E9";
+let NAVY    = "0F2057";
+let PRIMARY = "2563EB";
+let ACCENT  = "0EA5E9";
 const GOLD    = "F59E0B";
 const SUCCESS = "10B981";
 const DANGER  = "EF4444";
@@ -19,6 +22,24 @@ const TEXT    = "0F172A";
 const TEXT_MID = "334155";
 const TEXT_LIGHT = "64748B";
 const WHITE   = "FFFFFF";
+
+// حالة الثيم والهوية (تُضبط لكل مستند عبر applyTheme)
+let BRAND = "";
+let BRAND_INITIAL = "";
+let WM = false;
+let WM_TEXT = "";
+function applyTheme(opts?: GenOptions) {
+  const t = getTheme(opts?.theme?.id ?? null);
+  NAVY = t.dark.replace("#", "");
+  PRIMARY = t.primary.replace("#", "");
+  ACCENT = t.accent.replace("#", "");
+  const org = opts?.branding?.org ?? null;
+  BRAND = org?.name ?? "";
+  BRAND_INITIAL = BRAND ? Array.from(BRAND)[0] : "";
+  WM = !!opts?.branding?.showWatermark;
+  WM_TEXT = opts?.branding?.watermarkText ?? "وضوح";
+}
+
 
 // ============================
 // Helpers
@@ -61,7 +82,7 @@ function addCoverSheet(wb: ExcelJS.Workbook, title: string, projectName: string)
 
   // Brand header row
   ws.mergeCells("B2:C3");
-  ws.getCell("B2").value = "Wuduh | وضوح";
+  ws.getCell("B2").value = BRAND || "خطة إدارة المشروع";
   ws.getCell("B2").font = { bold: true, size: 24, color: { argb: `FF${PRIMARY}` }, name: "Calibri" };
   ws.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
 
@@ -93,9 +114,10 @@ function addCoverSheet(wb: ExcelJS.Workbook, title: string, projectName: string)
 // ============================
 // 1. WBS (Work Breakdown Structure) XLSX
 // ============================
-export async function generateWBSXLSX(agendaData: Record<string, unknown>, projectName: string): Promise<Uint8Array> {
+export async function generateWBSXLSX(agendaData: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
+  applyTheme(opts);
   const wb = new ExcelJS.Workbook();
-  wb.creator = "Wuduh AI";
+  wb.creator = BRAND || "Project";
   wb.created = new Date();
 
   addCoverSheet(wb, "Work Breakdown Structure (WBS)", projectName);
@@ -184,9 +206,10 @@ export async function generateWBSXLSX(agendaData: Record<string, unknown>, proje
 // ============================
 // 2. Risk Register XLSX
 // ============================
-export async function generateRiskRegisterXLSX(data: Record<string, unknown>, projectName: string): Promise<Uint8Array> {
+export async function generateRiskRegisterXLSX(data: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
+  applyTheme(opts);
   const wb = new ExcelJS.Workbook();
-  wb.creator = "Wuduh AI";
+  wb.creator = BRAND || "Project";
   wb.created = new Date();
 
   addCoverSheet(wb, "Risk Register", projectName);
@@ -295,9 +318,10 @@ export async function generateRiskRegisterXLSX(data: Record<string, unknown>, pr
 // ============================
 // 3. Gantt Chart XLSX
 // ============================
-export async function generateGanttXLSX(agendaData: Record<string, unknown>, projectName: string): Promise<Uint8Array> {
+export async function generateGanttXLSX(agendaData: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
+  applyTheme(opts);
   const wb = new ExcelJS.Workbook();
-  wb.creator = "Wuduh AI";
+  wb.creator = BRAND || "Project";
   wb.created = new Date();
 
   addCoverSheet(wb, "Project Schedule (Gantt)", projectName);
@@ -399,9 +423,10 @@ export async function generateGanttXLSX(agendaData: Record<string, unknown>, pro
 // ============================
 // 4. Budget Tracker XLSX
 // ============================
-export async function generateBudgetXLSX(agendaData: Record<string, unknown>, projectName: string): Promise<Uint8Array> {
+export async function generateBudgetXLSX(agendaData: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
+  applyTheme(opts);
   const wb = new ExcelJS.Workbook();
-  wb.creator = "Wuduh AI";
+  wb.creator = BRAND || "Project";
   wb.created = new Date();
 
   addCoverSheet(wb, "Budget Tracker", projectName);

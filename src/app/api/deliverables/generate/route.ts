@@ -23,6 +23,9 @@ import { generateCharterPDF, generateRiskRegisterPDF, generateProjectPlanPDF } f
 import { generateCharterDOCX, generateProjectPlanDOCX, generateRiskRegisterDOCX } from "@/lib/generators/docx";
 import { generateWBSXLSX, generateRiskRegisterXLSX, generateGanttXLSX, generateBudgetXLSX } from "@/lib/generators/xlsx";
 import { generateKickoffPPTX, generateStakeholderPPTX, generateProgressReportPPTX } from "@/lib/generators/pptx";
+import { getTheme } from "@/lib/themes";
+import { resolveBranding, type Plan, type OrgBranding } from "@/lib/branding";
+import type { GenOptions } from "@/lib/generators/types";
 
 interface DeliverableRequest {
   type: DeliverableType;
@@ -35,7 +38,8 @@ async function generateFile(
   format: DeliverableFormat,
   aiData: Record<string, unknown>,
   agendaData: Record<string, unknown>,
-  projectName: string
+  projectName: string,
+  opts?: GenOptions
 ): Promise<{ buffer: Uint8Array; contentType: string; ext: string }> {
   let buffer: Uint8Array;
   let contentType: string;
@@ -44,32 +48,32 @@ async function generateFile(
   if (format === "pdf") {
     ext = "pdf";
     contentType = "application/pdf";
-    if (type === "project_charter") buffer = await generateCharterPDF(aiData, projectName);
-    else if (type === "risk_register") buffer = await generateRiskRegisterPDF(aiData, projectName);
-    else buffer = await generateProjectPlanPDF(agendaData, projectName);
+    if (type === "project_charter") buffer = await generateCharterPDF(aiData, projectName, opts);
+    else if (type === "risk_register") buffer = await generateRiskRegisterPDF(aiData, projectName, opts);
+    else buffer = await generateProjectPlanPDF(agendaData, projectName, opts);
   } else if (format === "docx") {
     ext = "docx";
     contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    if (type === "project_charter") buffer = await generateCharterDOCX(aiData, projectName);
-    else if (type === "risk_register") buffer = await generateRiskRegisterDOCX(aiData, projectName);
-    else buffer = await generateProjectPlanDOCX(agendaData, projectName);
+    if (type === "project_charter") buffer = await generateCharterDOCX(aiData, projectName, opts);
+    else if (type === "risk_register") buffer = await generateRiskRegisterDOCX(aiData, projectName, opts);
+    else buffer = await generateProjectPlanDOCX(agendaData, projectName, opts);
   } else if (format === "xlsx") {
     ext = "xlsx";
     contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    if (type === "wbs") buffer = await generateWBSXLSX(agendaData, projectName);
-    else if (type === "risk_register") buffer = await generateRiskRegisterXLSX(aiData, projectName);
-    else if (type === "gantt_chart") buffer = await generateGanttXLSX(agendaData, projectName);
-    else buffer = await generateBudgetXLSX(agendaData, projectName);
+    if (type === "wbs") buffer = await generateWBSXLSX(agendaData, projectName, opts);
+    else if (type === "risk_register") buffer = await generateRiskRegisterXLSX(aiData, projectName, opts);
+    else if (type === "gantt_chart") buffer = await generateGanttXLSX(agendaData, projectName, opts);
+    else buffer = await generateBudgetXLSX(agendaData, projectName, opts);
   } else {
     // pptx
     ext = "pptx";
     contentType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
     if (type === "stakeholder_register") {
-      buffer = await generateStakeholderPPTX(agendaData, projectName);
+      buffer = await generateStakeholderPPTX(agendaData, projectName, opts);
     } else if (type === "status_report") {
-      buffer = await generateProgressReportPPTX(aiData, projectName);
+      buffer = await generateProgressReportPPTX(aiData, projectName, opts);
     } else {
-      buffer = await generateKickoffPPTX(agendaData, projectName);
+      buffer = await generateKickoffPPTX(agendaData, projectName, opts);
     }
   }
 
@@ -80,8 +84,19 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { projectId, deliverables }: { projectId: string; deliverables: DeliverableRequest[] } =
-    await req.json();
+  const {
+    projectId,
+    deliverables,
+    themeId,
+    useOrgIdentity,
+    includeSignature,
+  }: {
+    projectId: string;
+    deliverables: DeliverableRequest[];
+    themeId?: string;
+    useOrgIdentity?: boolean;
+    includeSignature?: boolean;
+  } = await req.json();
 
   const supabase = createAdminClient();
 
@@ -112,6 +127,33 @@ export async function POST(req: NextRequest) {
 
   const agendaData = (project.ai_agenda as Record<string, unknown>) || {};
   const projectName: string = project.name;
+
+  // خطة المستخدم + هوية المؤسسة (للثيم والعلامة المائية والهوية)
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("subscription_plan")
+    .eq("clerk_id", userId)
+    .maybeSingle();
+  const plan = (profile?.subscription_plan ?? "free") as Plan;
+
+  let org: OrgBranding | null = null;
+  const { data: membership } = await supabase
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+  if (membership?.org_id) {
+    const { data: orgRow } = await supabase
+      .from("organizations")
+      .select("*")
+      .eq("id", membership.org_id)
+      .maybeSingle();
+    if (orgRow) org = orgRow as OrgBranding;
+  }
+
+  const branding = resolveBranding(plan, org, { themeId, useOrgIdentity, includeSignature });
+  const genOptions: GenOptions = { theme: getTheme(themeId), branding };
 
   // AI prompt builders
   const promptBuilders: Partial<Record<DeliverableType, () => { system: string; user: string }>> = {
@@ -169,7 +211,8 @@ export async function POST(req: NextRequest) {
           format,
           aiData,
           agendaData,
-          projectName
+          projectName,
+          genOptions
         );
 
         // Upload to Supabase Storage

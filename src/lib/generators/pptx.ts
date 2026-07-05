@@ -4,11 +4,14 @@
 // ============================
 
 import PptxGenJS from "pptxgenjs";
+import { getTheme } from "@/lib/themes";
+import type { GenOptions } from "./types";
+
 
 // Brand colors
-const NAVY    = "0F2057";
-const PRIMARY = "2563EB";
-const ACCENT  = "0EA5E9";
+let NAVY    = "0F2057";
+let PRIMARY = "2563EB";
+let ACCENT  = "0EA5E9";
 const GOLD    = "F59E0B";
 const SUCCESS = "10B981";
 const DANGER  = "EF4444";
@@ -19,15 +22,33 @@ const TEXT_MID = "334155";
 const TEXT_LIGHT = "64748B";
 const WHITE   = "FFFFFF";
 
+// حالة الثيم والهوية (تُضبط لكل مستند عبر applyTheme)
+let BRAND = "";
+let BRAND_INITIAL = "";
+let WM = false;
+let WM_TEXT = "";
+function applyTheme(opts?: GenOptions) {
+  const t = getTheme(opts?.theme?.id ?? null);
+  NAVY = t.dark.replace("#", "");
+  PRIMARY = t.primary.replace("#", "");
+  ACCENT = t.accent.replace("#", "");
+  const org = opts?.branding?.org ?? null;
+  BRAND = org?.name ?? "";
+  BRAND_INITIAL = BRAND ? Array.from(BRAND)[0] : "";
+  WM = !!opts?.branding?.showWatermark;
+  WM_TEXT = opts?.branding?.watermarkText ?? "وضوح";
+}
+
+
 // ============================
 // Helpers
 // ============================
 function createPptx(): PptxGenJS {
   const pptx = new PptxGenJS();
   pptx.layout = "LAYOUT_WIDE";
-  pptx.title = "Wuduh AI | وضوح";
+  pptx.title = BRAND || "Project Document";
   pptx.subject = "PMI/PMBOK Project Document";
-  pptx.author = "Wuduh AI Platform";
+  pptx.author = BRAND || "Project";
   return pptx;
 }
 
@@ -42,10 +63,10 @@ function addCoverSlide(pptx: PptxGenJS, title: string, subtitle: string, project
 
   // Brand mark
   slide.addShape(pptx.ShapeType.roundRect, { x: 0.5, y: 0.4, w: 1.2, h: 1.2, fill: { color: PRIMARY }, line: { color: ACCENT, width: 2 } });
-  slide.addText("و", { x: 0.5, y: 0.4, w: 1.2, h: 1.2, fontSize: 36, bold: true, color: WHITE, align: "center", valign: "middle" });
+  slide.addText(BRAND_INITIAL, { x: 0.5, y: 0.4, w: 1.2, h: 1.2, fontSize: 36, bold: true, color: WHITE, align: "center", valign: "middle" });
 
   // Brand name
-  slide.addText("Wuduh | وضوح", { x: 2, y: 0.4, w: 5, h: 0.6, fontSize: 22, bold: true, color: ACCENT });
+  slide.addText(BRAND, { x: 2, y: 0.4, w: 5, h: 0.6, fontSize: 22, bold: true, color: ACCENT });
   slide.addText("PMI/PMBOK Guide 7th Edition AI Platform", { x: 2, y: 0.95, w: 6, h: 0.4, fontSize: 11, italic: true, color: TEXT_LIGHT });
 
   // Main title
@@ -104,14 +125,15 @@ function addSlideHeader(slide: PptxGenJS["addSlide"] & {addText: Function; addSh
   (slide as any).addShape(pptx.ShapeType.rect, { x: 0, y: 0.7, w: "100%", h: 0.05, fill: { color: ACCENT } });
 
   // Title
-  (slide as any).addText("Wuduh | وضوح", { x: 0.2, y: 0.05, w: 3, h: 0.5, fontSize: 12, color: ACCENT, bold: true });
+  (slide as any).addText(BRAND, { x: 0.2, y: 0.05, w: 3, h: 0.5, fontSize: 12, color: ACCENT, bold: true });
   (slide as any).addText(title, { x: 3.5, y: 0.08, w: 8.5, h: 0.55, fontSize: 18, bold: true, color: WHITE, align: "right" });
 }
 
 // ============================
 // 1. Project Kickoff Presentation
 // ============================
-export async function generateKickoffPPTX(agendaData: Record<string, unknown>, projectName: string): Promise<Uint8Array> {
+export async function generateKickoffPPTX(agendaData: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
+  applyTheme(opts);
   const pptx = createPptx();
 
   // Slide 1: Cover
@@ -306,7 +328,7 @@ export async function generateKickoffPPTX(agendaData: Record<string, unknown>, p
   endSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.08, h: "100%", fill: { color: ACCENT } });
   endSlide.addText("Thank You", { x: 0.5, y: 2.5, w: 12.5, h: 1.5, fontSize: 52, bold: true, color: WHITE, align: "center" });
   endSlide.addText("Questions & Discussion", { x: 0.5, y: 4.1, w: 12.5, h: 0.6, fontSize: 22, color: ACCENT, align: "center" });
-  endSlide.addText("Powered by Wuduh | وضوح  •  PMI/PMBOK Guide 7th Edition", {
+  endSlide.addText(((WM ? WM_TEXT + "  •  " : "") + (BRAND ? BRAND + "  •  " : "") + "PMI/PMBOK Guide 7th Edition"), {
     x: 0.5, y: 5.8, w: 12.5, h: 0.4, fontSize: 11, italic: true, color: TEXT_LIGHT, align: "center",
   });
 
@@ -316,7 +338,8 @@ export async function generateKickoffPPTX(agendaData: Record<string, unknown>, p
 // ============================
 // 2. Stakeholder Presentation
 // ============================
-export async function generateStakeholderPPTX(agendaData: Record<string, unknown>, projectName: string): Promise<Uint8Array> {
+export async function generateStakeholderPPTX(agendaData: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
+  applyTheme(opts);
   const pptx = createPptx();
 
   addCoverSlide(pptx, "Stakeholder Briefing", "إحاطة أصحاب المصلحة", projectName);
@@ -363,7 +386,7 @@ export async function generateStakeholderPPTX(agendaData: Record<string, unknown
   const endSlide = pptx.addSlide();
   endSlide.background = { color: NAVY };
   endSlide.addText("Questions?", { x: 0.5, y: 2.8, w: 12.5, h: 1.5, fontSize: 52, bold: true, color: WHITE, align: "center" });
-  endSlide.addText("Powered by Wuduh | وضوح  •  PMI/PMBOK Guide 7th Edition", {
+  endSlide.addText(((WM ? WM_TEXT + "  •  " : "") + (BRAND ? BRAND + "  •  " : "") + "PMI/PMBOK Guide 7th Edition"), {
     x: 0.5, y: 6.0, w: 12.5, h: 0.4, fontSize: 11, italic: true, color: TEXT_LIGHT, align: "center",
   });
 
@@ -373,7 +396,8 @@ export async function generateStakeholderPPTX(agendaData: Record<string, unknown
 // ============================
 // 3. Progress Report Presentation
 // ============================
-export async function generateProgressReportPPTX(reportData: Record<string, unknown>, projectName: string): Promise<Uint8Array> {
+export async function generateProgressReportPPTX(reportData: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
+  applyTheme(opts);
   const pptx = createPptx();
 
   addCoverSlide(pptx, "Progress Report", "تقرير التقدم", projectName);
@@ -444,7 +468,7 @@ export async function generateProgressReportPPTX(reportData: Record<string, unkn
   endSlide.background = { color: NAVY };
   endSlide.addText("Progress Report", { x: 0.5, y: 2.5, w: 12.5, h: 1.5, fontSize: 48, bold: true, color: WHITE, align: "center" });
   endSlide.addText(projectName, { x: 0.5, y: 4.1, w: 12.5, h: 0.6, fontSize: 22, color: ACCENT, align: "center" });
-  endSlide.addText("Powered by Wuduh | وضوح  •  PMI/PMBOK Guide 7th Edition", {
+  endSlide.addText(((WM ? WM_TEXT + "  •  " : "") + (BRAND ? BRAND + "  •  " : "") + "PMI/PMBOK Guide 7th Edition"), {
     x: 0.5, y: 6.0, w: 12.5, h: 0.4, fontSize: 11, italic: true, color: TEXT_LIGHT, align: "center",
   });
 

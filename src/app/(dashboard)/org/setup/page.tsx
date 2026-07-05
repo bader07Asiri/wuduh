@@ -25,7 +25,11 @@ export default function OrgSetupPage() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "", name_en: "", industry: "", cr_number: "",
+    logo_url: "", primary_color: "", letterhead_text: "",
+    signatory_name: "", signatory_title: "", department: "",
+    website: "", phone: "", email: "", address: "",
   });
+  const [showIdentity, setShowIdentity] = useState(false);
 
   const handleSubmit = async () => {
     if (!form.name.trim()) { toast.error("اسم المؤسسة مطلوب"); return; }
@@ -106,6 +110,87 @@ export default function OrgSetupPage() {
           value={form.cr_number}
           onChange={e => setForm(f => ({ ...f, cr_number: e.target.value }))}
         />
+
+        {/* الهوية البصرية (اختياري — تظهر في مستندات الباقات الاحترافية فأعلى) */}
+        <div className="pt-2 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={() => setShowIdentity(v => !v)}
+            className="text-sm font-bold text-brand-blue font-arabic"
+          >
+            {showIdentity ? "− إخفاء" : "+ إضافة"} الهوية البصرية (شعار، ترويسة، توقيع)
+          </button>
+          <p className="text-xs text-slate-400 font-arabic mt-1">
+            تُطبّق تلقائياً على المستندات المولّدة للباقات الاحترافية والأعلى.
+          </p>
+        </div>
+
+        {showIdentity && (
+          <div className="space-y-4">
+            <Input
+              label="رابط شعار المؤسسة (URL)"
+              placeholder="https://.../logo.png"
+              value={form.logo_url}
+              onChange={e => setForm(f => ({ ...f, logo_url: e.target.value }))}
+            />
+            <Input
+              label="نص الترويسة (لتر هيد)"
+              placeholder="العنوان • الهاتف • الموقع الإلكتروني"
+              value={form.letterhead_text}
+              onChange={e => setForm(f => ({ ...f, letterhead_text: e.target.value }))}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="اسم الموقّع"
+                placeholder="م. عبدالله العسيري"
+                value={form.signatory_name}
+                onChange={e => setForm(f => ({ ...f, signatory_name: e.target.value }))}
+              />
+              <Input
+                label="منصب الموقّع"
+                placeholder="مدير المشاريع"
+                value={form.signatory_title}
+                onChange={e => setForm(f => ({ ...f, signatory_title: e.target.value }))}
+              />
+              <Input
+                label="القسم"
+                placeholder="إدارة المشاريع"
+                value={form.department}
+                onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
+              />
+              <Input
+                label="اللون الأساسي (Hex)"
+                placeholder="#1E3A80"
+                value={form.primary_color}
+                onChange={e => setForm(f => ({ ...f, primary_color: e.target.value }))}
+              />
+              <Input
+                label="الهاتف"
+                placeholder="+9665xxxxxxxx"
+                value={form.phone}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+              />
+              <Input
+                label="الموقع الإلكتروني"
+                placeholder="www.example.com"
+                value={form.website}
+                onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+              />
+              <Input
+                label="البريد الإلكتروني"
+                placeholder="info@example.com"
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              />
+              <Input
+                label="العنوان"
+                placeholder="الرياض، السعودية"
+                value={form.address}
+                onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="pt-2">
           <Button

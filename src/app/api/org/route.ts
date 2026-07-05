@@ -30,14 +30,24 @@ export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "غير مصرّح — سجّل الدخول أولاً" }, { status: 401 });
 
-  let body: { name?: string; name_en?: string; industry?: string; cr_number?: string };
+  let body: {
+    name?: string; name_en?: string; industry?: string; cr_number?: string;
+    logo_url?: string; primary_color?: string; letterhead_text?: string;
+    signatory_name?: string; signatory_title?: string; department?: string;
+    website?: string; phone?: string; email?: string; address?: string;
+  };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "البيانات المرسلة غير صحيحة" }, { status: 400 });
   }
 
-  const { name, name_en, industry, cr_number } = body;
+  const {
+    name, name_en, industry, cr_number,
+    logo_url, primary_color, letterhead_text,
+    signatory_name, signatory_title, department,
+    website, phone, email: contactEmail, address,
+  } = body;
 
   if (!name?.trim()) {
     return NextResponse.json({ error: "اسم المؤسسة مطلوب" }, { status: 400 });
@@ -86,6 +96,16 @@ export async function POST(req: Request) {
       name_en: name_en?.trim() || null,
       industry: industry || null,
       cr_number: cr_number?.trim() || null,
+      logo_url: logo_url?.trim() || null,
+      primary_color: primary_color?.trim() || null,
+      letterhead_text: letterhead_text?.trim() || null,
+      signatory_name: signatory_name?.trim() || null,
+      signatory_title: signatory_title?.trim() || null,
+      department: department?.trim() || null,
+      website: website?.trim() || null,
+      phone: phone?.trim() || null,
+      email: contactEmail?.trim() || null,
+      address: address?.trim() || null,
     })
     .select()
     .single();
