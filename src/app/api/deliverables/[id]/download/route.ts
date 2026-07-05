@@ -1,12 +1,14 @@
-// ============================
-// وضوح | Wuduh — Deliverable Download API
-// يتحقق من الصلاحيات ويعيد توجيه التحميل
-// ============================
-
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { rateLimit, LIMITS } from "@/lib/rate-limit";
+
+const CONTENT_TYPES: Record<string, string> = {
+  pdf: "application/pdf",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+};
 
 export async function GET(
   request: NextRequest,
@@ -14,23 +16,20 @@ export async function GET(
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!userId) return NextResponse.json({ error: "غير مصرّح — سجّل الدخول أولاً" }, { status: 401 });
 
-    // Rate limiting
     const rl = rateLimit(`download:${userId}`, LIMITS.DELIVERABLE_DOWNLOAD);
     if (!rl.success) {
       return NextResponse.json({ error: "تجاوزت حد التحميل. حاول بعد دقيقة." }, { status: 429 });
     }
 
-    // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(params.id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+      return NextResponse.json({ error: "معرّف غير صالح" }, { status: 400 });
     }
 
     const supabase = createAdminClient();
 
-    // Fetch the deliverable record
     const { data: deliverable, error } = await supabase
       .from("deliverables")
       .select("*, projects(name, user_id)")
@@ -38,56 +37,63 @@ export async function GET(
       .single();
 
     if (error || !deliverable) {
-      return NextResponse.json({ error: "Deliverable not found" }, { status: 404 });
+      return NextResponse.json({ error: "الملف غير موجود" }, { status: 404 });
     }
 
-    // Check ownership
-    const projectUserId = (deliverable.projects as { user_id: string })?.user_id;
+    const projectUserId = (deliverable.projects as { user_id?: string } | null)?.user_id;
     if (projectUserId !== userId && deliverable.user_id !== userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "ليس لديك صلاحية لتحميل هذا الملف" }, { status: 403 });
     }
 
     if (deliverable.status !== "ready" || !deliverable.storage_path) {
+      return NextResponse.json({ error: "الملف غير جاهز بعد" }, { status: 422 });
+    }
+
+    const { data: blob, error: dlError } = await supabase.storage
+      .from("deliverables")
+      .download(deliverable.storage_path);
+
+    if (dlError || !blob) {
       return NextResponse.json(
-        { error: "File not ready yet" },
-        { status: 422 }
+        { error: `تعذّر جلب الملف من التخزين: ${dlError?.message ?? "غير موجود"}` },
+        { status: 500 }
       );
     }
 
-    // Create a signed URL (valid for 60 seconds — enough to initiate download)
-    const { data: signedData, error: signError } = await supabase.storage
-      .from("deliverables")
-      .createSignedUrl(deliverable.storage_path, 60);
+    const arrayBuffer = await blob.arrayBuffer();
 
-    if (signError || !signedData?.signedUrl) {
-      return NextResponse.json({ error: "Could not generate download link" }, { status: 500 });
+    try {
+      await supabase.from("ai_logs").insert({
+        user_id: userId,
+        project_id: deliverable.project_id,
+        prompt_type: `download_${deliverable.type}`,
+        tokens_used: 0,
+        response_quality: "good",
+      });
+    } catch {
+      /* logging is non-critical */
     }
 
-    // Determine filename
-    const ext = deliverable.format || "pdf";
+    const ext = (deliverable.format as string) || "pdf";
     const typeName = (deliverable.type as string).replace(/_/g, "-");
-    const projectName = ((deliverable.projects as { name: string })?.name || "project")
-      .replace(/\s+/g, "-")
-      .toLowerCase();
+    const projectName = ((deliverable.projects as { name?: string } | null)?.name || "project")
+      .replace(/[^\w؀-ۿ]+/g, "-")
+      .slice(0, 60);
     const filename = `wuduh-${projectName}-${typeName}.${ext}`;
+    const contentType = CONTENT_TYPES[ext] ?? "application/octet-stream";
 
-    // Log the download
-    await supabase.from("ai_logs").insert({
-      user_id: userId,
-      project_id: deliverable.project_id,
-      prompt_type: `download_${deliverable.type}`,
-      tokens_used: 0,
-      response_quality: "good",
-    }).single();
-
-    // Redirect to the signed URL — browser will download
-    return NextResponse.redirect(signedData.signedUrl, {
+    return new NextResponse(arrayBuffer, {
+      status: 200,
       headers: {
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Type": contentType,
+        "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
+        "Content-Length": String(arrayBuffer.byteLength),
+        "Cache-Control": "private, no-store",
       },
     });
   } catch (error) {
     console.error("Download error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const msg = error instanceof Error ? error.message : "خطأ داخلي";
+    return NextResponse.json({ error: `تعذّر التحميل: ${msg}` }, { status: 500 });
   }
 }
