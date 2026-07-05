@@ -97,6 +97,7 @@ export default function DeliverablesPage() {
   const [selected, setSelected] = useState<Selection[]>([]);
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState<GeneratedFile[]>([]);
+  const [downloadingAll, setDownloadingAll] = useState(false);
 
   // Pre-select recommended
   useEffect(() => {
@@ -108,6 +109,44 @@ export default function DeliverablesPage() {
     );
     setSelected(recs);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/deliverables?projectId=${id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!active) return;
+        const saved: GeneratedFile[] = (data.deliverables || []).map(
+          (d: { id: string; type: DeliverableType; format: DeliverableFormat }) => ({
+            id: d.id, type: d.type, format: d.format, url: "", status: "ready" as const,
+          })
+        );
+        if (saved.length > 0) setGenerated(saved);
+      } catch { /* ignore */ }
+    })();
+    return () => { active = false; };
+  }, [id]);
+
+  const readyFiles = generated.filter(f => f.status === "ready" && f.id);
+  const handleDownloadAll = async () => {
+    if (readyFiles.length === 0) return;
+    setDownloadingAll(true);
+    try {
+      for (const file of readyFiles) {
+        const a = document.createElement("a");
+        a.href = `/api/deliverables/${file.id}/download`;
+        a.download = "";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        await new Promise(r => setTimeout(r, 800));
+      }
+    } finally {
+      setDownloadingAll(false);
+    }
+  };
 
   const isSelected = (type: DeliverableType, format: DeliverableFormat) =>
     selected.some(s => s.type === type && s.format === format);
@@ -122,16 +161,34 @@ export default function DeliverablesPage() {
 
   const handleGenerate = async () => {
     if (selected.length === 0) { toast.error("اختر وثيقة واحدة على الأقل"); return; }
+
+    const alreadyReady = new Set(
+      generated.filter(f => f.status === "ready").map(f => `${f.type}:${f.format}`)
+    );
+    const toGenerate = selected.filter(s => !alreadyReady.has(`${s.type}:${s.format}`));
+
+    if (toGenerate.length === 0) {
+      toast.info("كل الوثائق المحددة مولّدة مسبقاً — يمكنك تحميلها مباشرة دون استهلاك رصيد.");
+      return;
+    }
+    if (toGenerate.length < selected.length) {
+      toast.info(`سيتم توليد ${toGenerate.length} وثيقة جديدة فقط (الباقي مولّد مسبقاً).`);
+    }
+
     setGenerating(true);
 
-    // Initialize all as "generating"
-    setGenerated(selected.map(s => ({ ...s, url: "", status: "generating" as const })));
+    setGenerated(prev => {
+      const key = (t: DeliverableType, f: DeliverableFormat) => `${t}:${f}`;
+      const genKeys = new Set(toGenerate.map(s => key(s.type, s.format)));
+      const kept = prev.filter(f => !genKeys.has(key(f.type, f.format)));
+      return [...toGenerate.map(s => ({ ...s, url: "", status: "generating" as const })), ...kept];
+    });
 
     try {
       const res = await fetch("/api/deliverables/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: id, deliverables: selected }),
+        body: JSON.stringify({ projectId: id, deliverables: toGenerate }),
       });
 
       if (!res.ok) throw new Error();
@@ -144,11 +201,16 @@ export default function DeliverablesPage() {
         url: f.url || "",
         status: (f.status === "ready" ? "ready" : f.status === "error" ? "error" : "generating") as "ready" | "generating" | "error",
       }));
-      setGenerated(files);
+      setGenerated(prev => {
+        const key = (f: GeneratedFile) => `${f.type}:${f.format}`;
+        const newKeys = new Set(files.map(key));
+        const kept = prev.filter(f => !newKeys.has(key(f)));
+        return [...files, ...kept];
+      });
       toast.success(`تم توليد ${files.filter(f => f.status === "ready").length} وثيقة بنجاح!`);
     } catch {
       toast.error("حدث خطأ أثناء التوليد");
-      setGenerated(s => s.map(f => ({ ...f, status: "error" as const })));
+      setGenerated(s => s.map(f => (f.status === "generating" ? { ...f, status: "error" as const } : f)));
     } finally {
       setGenerating(false);
     }
@@ -186,10 +248,17 @@ export default function DeliverablesPage() {
       {/* Generated files */}
       {generated.length > 0 && (
         <Card className="mb-6 border-2 border-emerald-500/20 bg-emerald-50/50">
-          <h2 className="font-bold text-slate-900 font-arabic mb-3 flex items-center gap-2">
-            <FileDown size={18} className="text-emerald-500" />
-            الوثائق الجاهزة
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-bold text-slate-900 font-arabic flex items-center gap-2">
+              <FileDown size={18} className="text-emerald-500" />
+              الوثائق الجاهزة
+            </h2>
+            {readyFiles.length > 1 && (
+              <Button size="sm" variant="outline" icon={<FileDown size={15} />} loading={downloadingAll} onClick={handleDownloadAll}>
+                تحميل الكل ({readyFiles.length})
+              </Button>
+            )}
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {generated.map((file, i) => (
               <div key={i} className="flex items-center justify-between bg-white rounded-xl p-3 border border-slate-100">

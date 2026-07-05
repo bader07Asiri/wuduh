@@ -1,20 +1,19 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export async function GET() {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) return NextResponse.json({ error: "غير مصرّح — سجّل الدخول أولاً" }, { status: 401 });
 
-  const supabase = await createClient();
-  await supabase.rpc("set_config", { key: "app.user_id", value: userId });
+  const supabase = createAdminClient();
 
   const { data: membership } = await supabase
     .from("org_members")
     .select("org_id, role, dept_id, department:org_departments(id,name,color)")
     .eq("user_id", userId)
     .eq("status", "active")
-    .single();
+    .maybeSingle();
 
   if (!membership) return NextResponse.json({ org: null });
 
@@ -29,53 +28,89 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) return NextResponse.json({ error: "غير مصرّح — سجّل الدخول أولاً" }, { status: 401 });
 
-  const body = await req.json();
+  let body: { name?: string; name_en?: string; industry?: string; cr_number?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "البيانات المرسلة غير صحيحة" }, { status: 400 });
+  }
+
   const { name, name_en, industry, cr_number } = body;
 
   if (!name?.trim()) {
     return NextResponse.json({ error: "اسم المؤسسة مطلوب" }, { status: 400 });
   }
 
-  const supabase = await createClient();
-  await supabase.rpc("set_config", { key: "app.user_id", value: userId });
+  const supabase = createAdminClient();
 
   const { data: existing } = await supabase
     .from("org_members")
     .select("org_id")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (existing) {
-    return NextResponse.json({ error: "انت بالفعل عضو في مؤسسة" }, { status: 400 });
+    return NextResponse.json(
+      { error: "لديك مؤسسة بالفعل — لا يمكن إنشاء أكثر من مؤسسة بنفس الحساب." },
+      { status: 409 }
+    );
+  }
+
+  const clerkUser = await currentUser();
+  const email = clerkUser?.emailAddresses?.[0]?.emailAddress ?? null;
+  const fullName = clerkUser?.fullName ?? null;
+
+  const { error: profileErr } = await supabase.from("user_profiles").upsert(
+    {
+      clerk_id: userId,
+      email,
+      full_name: fullName,
+      subscription_plan: "free",
+      subscription_status: "trialing",
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "clerk_id", ignoreDuplicates: true }
+  );
+
+  if (profileErr) {
+    return NextResponse.json({ error: `تعذّر تجهيز حسابك: ${profileErr.message}` }, { status: 500 });
   }
 
   const { data: org, error: orgErr } = await supabase
     .from("organizations")
-    .insert({ owner_id: userId, name: name.trim(), name_en, industry, cr_number })
+    .insert({
+      owner_id: userId,
+      name: name.trim(),
+      name_en: name_en?.trim() || null,
+      industry: industry || null,
+      cr_number: cr_number?.trim() || null,
+    })
     .select()
     .single();
 
   if (orgErr || !org) {
-    return NextResponse.json({ error: "فشل انشاء المؤسسة" }, { status: 500 });
+    return NextResponse.json(
+      { error: `تعذّر إنشاء المؤسسة: ${orgErr?.message ?? "خطأ غير معروف"}` },
+      { status: 500 }
+    );
   }
 
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("email, full_name")
-    .eq("clerk_id", userId)
-    .single();
-
-  await supabase.from("org_members").insert({
+  const { error: memberErr } = await supabase.from("org_members").insert({
     org_id: org.id,
     user_id: userId,
-    email: profile?.email ?? "",
-    full_name: profile?.full_name ?? "",
+    email: email ?? "",
+    full_name: fullName ?? "",
     role: "owner",
     status: "active",
     joined_at: new Date().toISOString(),
   });
+
+  if (memberErr) {
+    await supabase.from("organizations").delete().eq("id", org.id);
+    return NextResponse.json({ error: `تعذّر ربط حسابك بالمؤسسة: ${memberErr.message}` }, { status: 500 });
+  }
 
   return NextResponse.json({ org });
 }
