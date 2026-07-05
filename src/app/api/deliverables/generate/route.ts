@@ -90,13 +90,20 @@ export async function POST(req: NextRequest) {
     themeId,
     useOrgIdentity,
     includeSignature,
+    outputLang,
   }: {
     projectId: string;
     deliverables: DeliverableRequest[];
     themeId?: string;
     useOrgIdentity?: boolean;
     includeSignature?: boolean;
+    outputLang?: "ar" | "en";
   } = await req.json();
+
+  const langDirective =
+    outputLang === "en"
+      ? "\n\n=== LANGUAGE ===\nWrite ALL output content in professional English. Keep the JSON keys exactly as specified in English, and write every value in English."
+      : "\n\n=== اللغة ===\nاكتب كل المحتوى باللغة العربية الفصحى الاحترافية. أبقِ مفاتيح JSON كما هي بالإنجليزية، واكتب كل القيم بالعربية.";
 
   const supabase = createAdminClient();
 
@@ -155,14 +162,30 @@ export async function POST(req: NextRequest) {
   const branding = resolveBranding(plan, org, { themeId, useOrgIdentity, includeSignature });
   const genOptions: GenOptions = { theme: getTheme(themeId), branding };
 
+  // إذا اختار الإنجليزية: ترجم بيانات الأجندة مرة واحدة لتخرج كل المستندات إنجليزية
+  let effectiveAgenda = agendaData;
+  if (outputLang === "en" && Object.keys(agendaData).length > 0) {
+    try {
+      effectiveAgenda = (await generateWithClaude({
+        system:
+          "You are a precise JSON translator. Translate every Arabic string VALUE in the provided JSON to professional English. Keep all keys, numbers, and structure identical. Return ONLY the translated JSON object.",
+        user: JSON.stringify(agendaData),
+        maxTokens: 8000,
+        model: "claude-haiku-4-5-20251001",
+      })) as Record<string, unknown>;
+    } catch {
+      effectiveAgenda = agendaData;
+    }
+  }
+
   // AI prompt builders
   const promptBuilders: Partial<Record<DeliverableType, () => { system: string; user: string }>> = {
-    project_charter:      () => buildCharterPrompt(projectForm, agendaData),
-    risk_register:        () => buildRiskRegisterPrompt(projectForm, agendaData),
-    wbs:                  () => buildWBSPrompt(projectForm, agendaData),
-    communication_plan:   () => buildCommunicationPlanPrompt(projectForm, agendaData),
-    gantt_chart:          () => buildGanttPrompt(projectForm, agendaData),
-    status_report:        () => buildStatusReportPrompt(projectForm, agendaData),
+    project_charter:      () => buildCharterPrompt(projectForm, effectiveAgenda),
+    risk_register:        () => buildRiskRegisterPrompt(projectForm, effectiveAgenda),
+    wbs:                  () => buildWBSPrompt(projectForm, effectiveAgenda),
+    communication_plan:   () => buildCommunicationPlanPrompt(projectForm, effectiveAgenda),
+    gantt_chart:          () => buildGanttPrompt(projectForm, effectiveAgenda),
+    status_report:        () => buildStatusReportPrompt(projectForm, effectiveAgenda),
     quality_plan:         () => buildQualityPlanPrompt(projectForm),
   };
 
@@ -192,8 +215,10 @@ export async function POST(req: NextRequest) {
         const builder = promptBuilders[type];
         if (builder) {
           try {
+            const built = builder();
             aiData = (await generateWithClaude({
-              ...builder(),
+              system: built.system,
+              user: built.user + langDirective,
               maxTokens: 6000,
               model: "claude-haiku-4-5-20251001",
             })) as Record<string, unknown>;
@@ -210,7 +235,7 @@ export async function POST(req: NextRequest) {
           type,
           format,
           aiData,
-          agendaData,
+          effectiveAgenda,
           projectName,
           genOptions
         );

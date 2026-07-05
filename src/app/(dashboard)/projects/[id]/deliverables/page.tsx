@@ -105,6 +105,7 @@ export default function DeliverablesPage() {
   const [showThemes, setShowThemes] = useState(false);
   const [useOrgIdentity, setUseOrgIdentity] = useState(false);
   const [includeSignature, setIncludeSignature] = useState(false);
+  const [outputLang, setOutputLang] = useState<"ar" | "en">("ar");
   const activeTheme = DOC_THEMES.find(t => t.id === themeId) ?? DOC_THEMES[0];
   const filteredThemes = themeSearch
     ? DOC_THEMES.filter(t => (t.name + " " + t.nameEn).toLowerCase().includes(themeSearch.toLowerCase()))
@@ -199,7 +200,7 @@ export default function DeliverablesPage() {
       const res = await fetch("/api/deliverables/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: id, deliverables: toGenerate, themeId, useOrgIdentity, includeSignature }),
+        body: JSON.stringify({ projectId: id, deliverables: toGenerate, themeId, useOrgIdentity, includeSignature, outputLang }),
       });
 
       if (!res.ok) throw new Error();
@@ -317,6 +318,36 @@ export default function DeliverablesPage() {
             <PenLine size={15} className="text-slate-500" />
             <span className="text-sm font-arabic text-slate-700">أضف كتلة التوقيع (اسم ومنصب الموقّع من بيانات المؤسسة)</span>
           </label>
+        </div>
+
+        {/* لغة المستندات — الذكاء الاصطناعي يكتب المحتوى باللغة المختارة */}
+        <div className="mt-4 pt-4 border-t border-slate-100">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="font-bold text-slate-900 font-arabic text-sm">لغة المستندات</span>
+            <span className="text-xs text-slate-400 font-arabic">— يُترجم المحتوى تلقائياً</span>
+          </div>
+          <div className="inline-flex rounded-xl border border-slate-200 p-1 bg-slate-50">
+            <button
+              type="button"
+              onClick={() => setOutputLang("ar")}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-sm font-bold transition-all",
+                outputLang === "ar" ? "bg-white text-brand-blue shadow-sm" : "text-slate-500"
+              )}
+            >
+              العربية
+            </button>
+            <button
+              type="button"
+              onClick={() => setOutputLang("en")}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-sm font-bold font-latin transition-all",
+                outputLang === "en" ? "bg-white text-brand-blue shadow-sm" : "text-slate-500"
+              )}
+            >
+              English
+            </button>
+          </div>
         </div>
       </Card>
 
