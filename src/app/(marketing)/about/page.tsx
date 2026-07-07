@@ -51,7 +51,7 @@ const values = [
 const stats = [
   { value: "25+", label: "نوع وثيقة جاهزة" },
   { value: "PMI", label: "معايير معتمدة دولياً" },
-  { value: "7th", label: "إصدار PMBOK المطبّق" },
+  { value: "7 و 8", label: "إصدارات PMBOK المدعومة" },
   { value: "4", label: "صيغ تصدير مدعومة" },
 ];
 

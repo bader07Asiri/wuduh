@@ -47,7 +47,7 @@ export function Pricing() {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
           {Object.entries(PLANS).map(([key, plan], i) => {
             const isPopular = key === "professional";
             const price = annual ? plan.price_yearly / 12 : plan.price_monthly;
@@ -77,13 +77,15 @@ export function Pricing() {
                   </h3>
                   <div className="flex items-baseline gap-1 mb-3">
                     <span className={cn("text-4xl font-black font-latin", isPopular ? "text-white" : "text-slate-900")}>
-                      {Math.round(price)} ر.س
+                      {price === 0 ? "مجاناً" : `${Math.round(price)} ر.س`}
                     </span>
-                    <span className={cn("text-sm font-arabic", isPopular ? "text-white/60" : "text-slate-400")}>
-                      / شهر
-                    </span>
+                    {price !== 0 && (
+                      <span className={cn("text-sm font-arabic", isPopular ? "text-white/60" : "text-slate-400")}>
+                        / شهر
+                      </span>
+                    )}
                   </div>
-                  {annual && (
+                  {annual && price !== 0 && (
                     <div className={cn("text-xs font-arabic", isPopular ? "text-white/60" : "text-slate-400")}>
                       يُفوتر سنوياً — {plan.price_yearly} ر.س
                     </div>

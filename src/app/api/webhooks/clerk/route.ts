@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
         email: primaryEmail,
         full_name: fullName,
         subscription_plan: "free",
-        subscription_status: "trialing",
+        subscription_status: "active",
         updated_at: new Date().toISOString(),
       },
       { onConflict: "clerk_id", ignoreDuplicates: true }

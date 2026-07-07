@@ -262,17 +262,35 @@ export interface OrgMember {
 
 // ---- Subscription Plans ----
 export const PLANS = {
+  free: {
+    name: "Free",
+    name_ar: "المجانية",
+    price_monthly: 0,
+    price_yearly: 0,
+    currency: "SAR",
+    max_projects: 1,
+    features: [
+      "5 مخرجات شهرياً",
+      "كل الصيغ: PDF · Word · Excel · PowerPoint",
+      "أكثر من 125 ثيم للمستندات",
+      "مستندات بالعربية أو الإنجليزية",
+      "إصدارا PMBOK: 7 و 8",
+      "علامة «وضوح» المائية على المستندات",
+    ],
+  },
   starter: {
     name: "Starter",
     name_ar: "المبتدئ",
     price_monthly: 109,
     price_yearly: 1090,
     currency: "SAR",
-    max_projects: 3,
+    max_projects: 5,
     features: [
-      "3 مشاريع نشطة",
-      "كل المخرجات الأساسية",
-      "تصدير PDF & DOCX",
+      "30 مخرجة شهرياً",
+      "بدون علامة مائية",
+      "كل الصيغ + أكثر من 125 ثيم",
+      "مستندات بالعربية والإنجليزية",
+      "إصدارا PMBOK: 7 و 8",
       "دعم بالبريد الإلكتروني",
     ],
   },
@@ -282,13 +300,14 @@ export const PLANS = {
     price_monthly: 299,
     price_yearly: 2990,
     currency: "SAR",
-    max_projects: 15,
+    max_projects: 25,
     features: [
-      "15 مشروع نشط",
-      "كل المخرجات (PDF, DOCX, XLSX, PPTX)",
-      "تحليل المخاطر المتقدم",
-      "Gantt Chart تفاعلي",
-      "دعم أولوية",
+      "150 مخرجة شهرياً",
+      "كل ميزات المبتدئ",
+      "هوية مؤسستك في المستندات (شعار · ترويسة · توقيع)",
+      "إدارة الفريق والأقسام",
+      "تحليل مخاطر متقدم + Gantt تفاعلي",
+      "دعم ذو أولوية",
     ],
   },
   enterprise: {
@@ -299,9 +318,9 @@ export const PLANS = {
     currency: "SAR",
     max_projects: -1, // unlimited
     features: [
-      "مشاريع غير محدودة",
+      "مخرجات غير محدودة",
+      "كل ميزات الاحترافي",
       "API للتكامل مع أنظمتك",
-      "تخصيص القوالب",
       "تقارير المحفظة (Portfolio)",
       "مدير حساب مخصص",
       "SLA 99.9%",

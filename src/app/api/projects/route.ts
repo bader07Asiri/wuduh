@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       email: clerkUser?.emailAddresses?.[0]?.emailAddress ?? null,
       full_name: clerkUser?.fullName ?? null,
       subscription_plan: "free",
-      subscription_status: "trialing",
+      subscription_status: "active",
       updated_at: new Date().toISOString(),
     },
     { onConflict: "clerk_id", ignoreDuplicates: true }
