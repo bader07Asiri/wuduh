@@ -4,6 +4,7 @@
 // ============================
 
 import PptxGenJS from "pptxgenjs";
+import { containsArabic } from "./arabic";
 import { getTheme } from "@/lib/themes";
 import type { GenOptions } from "./types";
 
@@ -165,6 +166,7 @@ export async function generateKickoffPPTX(agendaData: Record<string, unknown>, p
     agendaSlide.addText(item, {
       x: 0.7 + (i % 2) * 6.5, y: 1.65 + Math.floor(i / 2) * 1.2, w: 5.6, h: 0.9,
       fontSize: 12, color: TEXT, valign: "middle",
+      rtlMode: containsArabic(item), align: containsArabic(item) ? "right" : "left",
     });
   });
 
@@ -178,6 +180,7 @@ export async function generateKickoffPPTX(agendaData: Record<string, unknown>, p
   overviewSlide.addText(overview, {
     x: 0.5, y: 1.6, w: 12.5, h: 2.0,
     fontSize: 13, color: TEXT_MID, wrap: true,
+    rtlMode: containsArabic(overview), align: containsArabic(overview) ? "right" : "left",
   });
 
   // Info boxes
@@ -225,10 +228,12 @@ export async function generateKickoffPPTX(agendaData: Record<string, unknown>, p
     objSlide.addText(`Phase ${i + 1}: ${phase.name}`, {
       x: 0.6 + (i % 3) * 4.4, y: 1.72 + Math.floor(i / 3) * 2.0, w: 3.9, h: 0.4,
       fontSize: 10, bold: true, color: WHITE,
+      rtlMode: containsArabic(phase.name), align: containsArabic(phase.name) ? "right" : "left",
     });
     objSlide.addText(phase.description.substring(0, 100), {
       x: 0.6 + (i % 3) * 4.4, y: 2.2 + Math.floor(i / 3) * 2.0, w: 3.9, h: 1.2,
       fontSize: 9, color: TEXT_MID, wrap: true,
+      rtlMode: containsArabic(phase.description), align: containsArabic(phase.description) ? "right" : "left",
     });
   });
 
