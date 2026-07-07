@@ -2,6 +2,10 @@
 const nextConfig = {
   // Build a self-contained server bundle for Docker / self-hosting (Coolify, VPS)
   output: "standalone",
+  // Types are verified separately with `tsc`, and ESLint isn't configured here.
+  // Skipping these in-build phases sharply cuts build memory/time (avoids OOM on small VPS).
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
   experimental: {
     serverActions: { allowedOrigins: ["localhost:3000", process.env.NEXT_PUBLIC_APP_URL].filter(Boolean) },
   },
