@@ -88,7 +88,7 @@ export function Hero() {
                   <div className="w-3 h-3 rounded-full bg-green-400/60" />
                 </div>
                 <div className="flex-1 bg-white/10 rounded-md px-3 py-1 text-xs text-white/40 font-latin text-center">
-                  app.wuduh.sa
+                  wuduh.tasweeqat.com
                 </div>
               </div>
               {/* Fake content */}

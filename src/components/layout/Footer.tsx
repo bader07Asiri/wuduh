@@ -60,7 +60,7 @@ export function Footer() {
             © {new Date().getFullYear()} وضوح | Wuduh — جميع الحقوق محفوظة
           </p>
           <p className="text-xs font-arabic">
-            مبني وفق معايير <span className="text-brand-cyan font-bold">PMI / PMBOK Guide 7th Edition</span>
+            مبني وفق معايير <span className="text-brand-cyan font-bold">PMI / PMBOK Guide 7th & 8th Edition</span>
           </p>
         </div>
       </div>

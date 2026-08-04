@@ -160,7 +160,7 @@ export default function ProjectPage() {
             <div>
               <p className="text-sm font-bold text-amber-800 font-arabic">مخرج ذكاء اصطناعي — يتطلب مراجعة بشرية</p>
               <p className="text-xs text-amber-700 font-arabic mt-0.5 leading-relaxed">
-                هذه الخطة مولّدة بالذكاء الاصطناعي وفق معايير PMBOK Guide 7th Edition. راجعها مع فريقك قبل الاعتماد الرسمي. وضوح لا يتحمل مسؤولية القرارات المبنية عليها دون مراجعة متخصص.
+                هذه الخطة مولّدة بالذكاء الاصطناعي وفق معايير PMBOK Guide. راجعها مع فريقك قبل الاعتماد الرسمي. وضوح لا يتحمل مسؤولية القرارات المبنية عليها دون مراجعة متخصص.
               </p>
             </div>
           </div>

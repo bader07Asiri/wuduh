@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +14,15 @@ type PlanKey = keyof typeof PLANS;
 export default function SettingsPage() {
   const { user } = useUser();
   const [loadingPlan, setLoadingPlan] = useState<PlanKey | null>(null);
-  const currentPlan: string = "free"; // في الإنتاج: يُجلب من Supabase
+  const [currentPlan, setCurrentPlan] = useState<string>("free");
+
+  // جلب الباقة الفعلية للمستخدم من Supabase بدل قيمة ثابتة
+  useEffect(() => {
+    fetch("/api/me")
+      .then((r) => r.json())
+      .then((d) => setCurrentPlan(d.plan ?? "free"))
+      .catch(() => {});
+  }, []);
 
   const handleUpgrade = async (plan: PlanKey) => {
     setLoadingPlan(plan);

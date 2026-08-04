@@ -11,6 +11,7 @@ import {
   Search, Palette, RotateCcw, Save, ChevronDown, Upload, ImageIcon
 } from "lucide-react";
 import { toast } from "sonner";
+import { PLANS } from "@/types";
 
 // =================== Types ===================
 interface AdminStats {
@@ -65,7 +66,11 @@ const PLAN_LABELS: Record<string, string> = {
 const STATUS_LABELS: Record<string, string> = {
   active: "نشط", cancelled: "ملغي", past_due: "متأخر", trialing: "تجريبي",
 };
-const PLAN_PRICES: Record<string, number> = { starter: 149, professional: 399, enterprise: 999 };
+const PLAN_PRICES: Record<string, number> = {
+  starter: PLANS.starter.price_monthly,
+  professional: PLANS.professional.price_monthly,
+  enterprise: PLANS.enterprise.price_monthly,
+};
 const PLAN_ICONS: Record<string, typeof Users> = {
   free: Users, starter: Star, professional: Zap, enterprise: Crown,
 };
@@ -272,7 +277,7 @@ function StatsTab({ stats, totalPaid }: { stats: AdminStats; totalPaid: number }
                   <div className="text-sm font-arabic text-slate-800 font-medium truncate">{u.full_name || "—"}</div>
                   <div className="text-xs text-slate-400 font-latin truncate">{u.email}</div>
                 </div>
-                <Badge variant={STATUS_COLORS[u.subscription_plan] as "success" | "info" | "warning" | "default" ?? "default"} className="text-xs flex-shrink-0">
+                <Badge variant={u.subscription_plan === "free" ? "default" : "info"} className="text-xs flex-shrink-0">
                   {PLAN_LABELS[u.subscription_plan] ?? u.subscription_plan}
                 </Badge>
               </div>

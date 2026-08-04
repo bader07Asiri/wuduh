@@ -19,7 +19,11 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://wuduh-app.vercel.app";
+// Canonical public URL for metadata/OG. Falls back to the production domain
+// if the env var is missing or set to a non-HTTPS value (e.g. a raw server IP),
+// so social/link previews always resolve to the real site.
+const ENV_URL = process.env.NEXT_PUBLIC_APP_URL;
+const APP_URL = ENV_URL && ENV_URL.startsWith("https://") ? ENV_URL : "https://wuduh.tasweeqat.com";
 
 export const metadata: Metadata = {
   title: "وضوح | Wuduh - إدارة مشاريع باحترافية PMP",

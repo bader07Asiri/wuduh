@@ -7,7 +7,7 @@ const features = [
   {
     icon: Brain,
     title: "ذكاء اصطناعي متخصص بـ PMI",
-    description: "مدرَّب حصراً على PMBOK Guide الإصدار السابع. يطبق معايير PMI الرسمية في كل مخرج.",
+    description: "مبني وفق PMBOK Guide الإصدارين السابع والثامن. يطبق معايير PMI الرسمية في كل مخرج.",
     color: "text-brand-blue bg-blue-50",
   },
   {

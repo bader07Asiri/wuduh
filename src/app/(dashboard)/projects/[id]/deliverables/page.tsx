@@ -356,7 +356,7 @@ export default function DeliverablesPage() {
         <AlertTriangle size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-amber-700 font-arabic leading-relaxed">
           <span className="font-bold text-amber-800">تنبيه: </span>
-          المخرجات مولّدة بالذكاء الاصطناعي وفق PMBOK Guide 7th Edition. راجعها مع فريقك قبل الاستخدام الرسمي. وضوح لا يتحمل مسؤولية القرارات المبنية عليها دون مراجعة متخصص معتمد.
+          المخرجات مولّدة بالذكاء الاصطناعي وفق معايير PMBOK Guide. راجعها مع فريقك قبل الاستخدام الرسمي. وضوح لا يتحمل مسؤولية القرارات المبنية عليها دون مراجعة متخصص معتمد.
         </p>
       </div>
 

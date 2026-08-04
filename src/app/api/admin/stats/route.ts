@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { PLANS } from "@/types";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "";
 
@@ -45,9 +46,9 @@ export async function GET() {
   ]);
 
   const PLAN_PRICES: Record<string, number> = {
-    starter: 149,
-    professional: 399,
-    enterprise: 999,
+    starter: PLANS.starter.price_monthly,
+    professional: PLANS.professional.price_monthly,
+    enterprise: PLANS.enterprise.price_monthly,
   };
 
   const planCounts: Record<string, number> = { free: 0, starter: 0, professional: 0, enterprise: 0 };
