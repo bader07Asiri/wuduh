@@ -105,6 +105,8 @@ export interface Project {
   assumptions?: string;
   status: ProjectStatus;
   ai_agenda?: AIAgenda;
+  intake_details?: IntakeDetails;
+  pmbok_edition?: "7" | "8";
   user_notes?: string;
   agenda_approved: boolean;
   created_at: string;
@@ -203,6 +205,57 @@ export interface OnboardingData {
   has_pmp_certified?: boolean;
 }
 
+// ---- Optional depth inputs (raise document precision) ----
+export type InfluenceLevel = "high" | "medium" | "low";
+export type ProjectMethodology = "predictive" | "agile" | "hybrid";
+
+export interface StakeholderInput {
+  name: string;
+  role: string;
+  influence: InfluenceLevel;
+  interest: InfluenceLevel;
+}
+
+export interface TeamRoleInput {
+  role: string;
+  count: number;
+}
+
+export interface MilestoneInput {
+  name: string;
+  date: string;
+}
+
+export interface CostLineInput {
+  category: string;
+  amount?: number;
+}
+
+// Collected in the optional "depth" sections of the intake form.
+// Persisted as a single JSONB column (projects.intake_details) and fed to the AI.
+export interface IntakeDetails {
+  // Scope
+  deliverables?: string[];
+  out_of_scope?: string[];
+  acceptance_criteria?: string;
+  // Stakeholders
+  sponsor?: string;
+  stakeholders?: StakeholderInput[];
+  // Team & resources
+  team_roles?: TeamRoleInput[];
+  // Schedule & methodology
+  methodology?: ProjectMethodology;
+  milestones?: MilestoneInput[];
+  // Cost
+  budget_breakdown?: CostLineInput[];
+  funding_source?: string;
+  // Risk
+  known_risks?: string[];
+  // Quality & compliance
+  quality_standards?: string;
+  kpis?: string[];
+}
+
 // ---- Project Form ----
 export interface ProjectFormData {
   name: string;
@@ -217,6 +270,8 @@ export interface ProjectFormData {
   constraints?: string;
   assumptions?: string;
   pmbok_edition?: "7" | "8";
+  // Optional depth (hybrid form) — quality scales with what's provided
+  intake?: IntakeDetails;
 }
 
 // ---- Organization & Departments ----

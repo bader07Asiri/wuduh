@@ -3,7 +3,47 @@
 // مبنية على PMBOK Guide 7th Edition + PMI Standards
 // ============================
 
-import type { Industry, UserType, ProjectFormData, UserProfile } from "@/types";
+import type { Industry, UserType, ProjectFormData, UserProfile, IntakeDetails } from "@/types";
+
+// ============================
+// تنسيق التفاصيل الاختيارية (تُغذّي الذكاء ببيانات حقيقية بدل الافتراض)
+// ============================
+const METHODOLOGY_AR: Record<string, string> = {
+  predictive: "تنبؤية (Waterfall)", agile: "رشيقة (Agile)", hybrid: "هجينة (Hybrid)",
+};
+
+function formatIntake(intake?: IntakeDetails): string {
+  if (!intake || Object.keys(intake).length === 0) {
+    return "لم يُقدّم المستخدم تفاصيل إضافية — استنتج ما يلزم بحكمة ووضّح افتراضاتك.";
+  }
+  const lines: string[] = [];
+  if (intake.deliverables?.length) lines.push(`المخرجات الرئيسية (كما حددها المستخدم): ${intake.deliverables.join(" | ")}`);
+  if (intake.out_of_scope?.length) lines.push(`خارج النطاق صراحةً: ${intake.out_of_scope.join(" | ")}`);
+  if (intake.acceptance_criteria) lines.push(`معايير القبول: ${intake.acceptance_criteria}`);
+  if (intake.sponsor) lines.push(`راعي المشروع: ${intake.sponsor}`);
+  if (intake.stakeholders?.length) {
+    lines.push("أصحاب المصلحة (استخدمهم كما هم في سجل أصحاب المصلحة وخطة التواصل):");
+    intake.stakeholders.forEach((s) =>
+      lines.push(`  - ${s.name || "—"} | الدور: ${s.role || "—"} | التأثير: ${s.influence} | الاهتمام: ${s.interest}`));
+  }
+  if (intake.team_roles?.length) {
+    lines.push(`الأدوار والموارد المطلوبة: ${intake.team_roles.map((r) => `${r.role} (${r.count})`).join(" | ")}`);
+  }
+  if (intake.methodology) lines.push(`المنهجية التي اختارها المستخدم: ${METHODOLOGY_AR[intake.methodology] ?? intake.methodology} — التزم بها.`);
+  if (intake.milestones?.length) {
+    lines.push(`المعالم والمواعيد الحرجة: ${intake.milestones.map((m) => `${m.name}${m.date ? " (" + m.date + ")" : ""}`).join(" | ")}`);
+  }
+  if (intake.budget_breakdown?.length) {
+    lines.push(`بنود التكلفة: ${intake.budget_breakdown.map((c) => `${c.category}${c.amount != null ? ": " + c.amount : ""}`).join(" | ")}`);
+  }
+  if (intake.funding_source) lines.push(`مصدر التمويل: ${intake.funding_source}`);
+  if (intake.known_risks?.length) {
+    lines.push(`مخاطر يعرفها المستخدم مسبقاً (أدرجها في سجل المخاطر ووسّع عليها): ${intake.known_risks.join(" | ")}`);
+  }
+  if (intake.quality_standards) lines.push(`معايير الجودة والامتثال المطلوبة: ${intake.quality_standards}`);
+  if (intake.kpis?.length) lines.push(`مؤشرات النجاح (KPIs) التي حددها المستخدم: ${intake.kpis.join(" | ")}`);
+  return lines.join("\n");
+}
 
 // ============================
 // Industry Context — تخصيص المحتوى حسب القطاع
@@ -101,6 +141,9 @@ ${industryCtx}
 الأهداف: ${project.objectives.join(" | ")}
 القيود: ${project.constraints ?? "لا يوجد قيود محددة"}
 الافتراضات: ${project.assumptions ?? "لا توجد افتراضات محددة"}
+
+=== تفاصيل إضافية قدّمها المستخدم (مهم — استخدمها كما هي ولا تخترع بدائل عنها؛ وسّع فقط ما هو ناقص) ===
+${formatIntake(project.intake)}
 
 === بيانات المنظمة ===
 نوع المستخدم: ${user.user_type}

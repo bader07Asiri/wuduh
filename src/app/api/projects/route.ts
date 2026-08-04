@@ -68,27 +68,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "End date must be after start date" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from("projects")
-    .insert({
-      user_id: userId,
-      name: body.name,
-      description: body.description,
-      client_name: body.client_name,
-      start_date: body.start_date,
-      end_date: body.end_date,
-      budget: body.budget,
-      currency: body.currency ?? "SAR",
-      team_size: body.team_size,
-      objectives: body.objectives,
-      constraints: body.constraints,
-      assumptions: body.assumptions,
-      pmbok_edition: body.pmbok_edition ?? "7",
-      status: "planning",
-      agenda_approved: false,
-    })
-    .select()
-    .single();
+  const baseRow = {
+    user_id: userId,
+    name: body.name,
+    description: body.description,
+    client_name: body.client_name,
+    start_date: body.start_date,
+    end_date: body.end_date,
+    budget: body.budget,
+    currency: body.currency ?? "SAR",
+    team_size: body.team_size,
+    objectives: body.objectives,
+    constraints: body.constraints,
+    assumptions: body.assumptions,
+    pmbok_edition: body.pmbok_edition ?? "7",
+    status: "planning",
+    agenda_approved: false,
+  };
+
+  // Optional depth details are stored in a single JSONB column (intake_details).
+  const hasIntake = body.intake && Object.keys(body.intake).length > 0;
+  const fullRow = hasIntake ? { ...baseRow, intake_details: body.intake } : baseRow;
+
+  let { data, error } = await supabase.from("projects").insert(fullRow).select().single();
+
+  // Resilience: if the intake_details column isn't migrated yet, don't fail the
+  // whole creation — retry without it so the core project is still created.
+  if (error && hasIntake && /intake_details/i.test(error.message ?? "")) {
+    console.warn("intake_details column missing — inserting project without depth details. Run migration_intake.sql.");
+    ({ data, error } = await supabase.from("projects").insert(baseRow).select().single());
+  }
 
   if (error || !data) {
     console.error("Project insert error:", error);

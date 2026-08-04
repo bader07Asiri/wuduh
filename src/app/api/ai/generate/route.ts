@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
     objectives: project.objectives,
     constraints: project.constraints,
     assumptions: project.assumptions,
+    pmbok_edition: (project.pmbok_edition ?? "7") as "7" | "8",
+    intake: project.intake_details ?? undefined,
   };
 
   const userSummary = {
