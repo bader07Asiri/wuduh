@@ -33,3 +33,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# مواد التصميم المرجعية (مصدرها في مجلد تسويقات) — لا نضخّم بها ريبو التطبيق
+_تصاميم/
