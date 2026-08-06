@@ -54,7 +54,7 @@ export function Sidebar() {
       <div className="flex items-center justify-center px-5 py-4 border-b border-slate-100">
         <Link href="/dashboard">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-full.png" alt="وضوح Wuduh" className="h-12 w-auto object-contain" />
+          <img src="/wuduh-assets/logo-full-light.png" alt="وضوح Wuduh" className="h-12 w-auto object-contain" />
         </Link>
       </div>
 

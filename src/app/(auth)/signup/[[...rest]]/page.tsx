@@ -7,7 +7,7 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-full.png" alt="وضوح Wuduh" className="h-20 w-auto object-contain drop-shadow-lg" />
+          <img src="/wuduh-assets/logo-full-light.png" alt="وضوح Wuduh" className="h-20 w-auto object-contain" />
         </div>
 
         <SignUp
