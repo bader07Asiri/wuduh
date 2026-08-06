@@ -39,7 +39,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        arabic: ["Tajawal", "sans-serif"],
+        arabic: ["Noto Sans Arabic", "Tajawal", "sans-serif"],
         brand:  ["Montserrat", "'Helvetica Neue'", "Arial", "sans-serif"],
         latin:  ["Montserrat", "Inter", "sans-serif"],
         sans:   ["Tajawal", "Montserrat", "Inter", "sans-serif"],

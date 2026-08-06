@@ -44,11 +44,14 @@ export function Sidebar() {
       .catch(() => {});
   }, []);
 
+  const linkBase = "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium font-arabic transition-all duration-200";
+  const inactive = "text-slate-500 hover:text-slate-900 hover:bg-slate-100";
+
   return (
-    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-navy-950 border-l border-white/10 fixed right-0 top-0">
+    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-white border-l border-slate-200 fixed right-0 top-0">
 
       {/* ── Logo ──────────────────────────────────────── */}
-      <div className="flex items-center justify-center px-5 py-4 border-b border-white/10">
+      <div className="flex items-center justify-center px-5 py-4 border-b border-slate-100">
         <Link href="/dashboard">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-full.png" alt="وضوح Wuduh" className="h-12 w-auto object-contain" />
@@ -64,12 +67,12 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium font-arabic transition-all duration-200",
+                linkBase,
                 active
-                  ? "bg-brand-blue text-white shadow-glow"
+                  ? "bg-brand-blue text-white shadow-sm"
                   : highlight
-                  ? "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/25 hover:bg-brand-cyan/25"
-                  : "text-white/60 hover:text-white hover:bg-white/8"
+                  ? "bg-brand-blue/10 text-brand-blue border border-brand-blue/20 hover:bg-brand-blue/15"
+                  : inactive
               )}
             >
               <Icon size={18} />
@@ -83,10 +86,10 @@ export function Sidebar() {
           <Link
             href="/admin"
             className={cn(
-              "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium font-arabic transition-all duration-200 mt-2",
+              linkBase, "mt-2",
               pathname.startsWith("/admin")
-                ? "bg-brand-light text-navy-950 font-bold"
-                : "text-brand-light/70 hover:text-brand-light hover:bg-brand-light/10"
+                ? "bg-[#17306A] text-white font-bold"
+                : "text-slate-500 hover:text-[#17306A] hover:bg-slate-100"
             )}
           >
             <ShieldCheck size={18} />
@@ -101,10 +104,10 @@ export function Sidebar() {
           <>
             <div className="px-4 py-2 mb-1">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <Building2 size={11} className="text-brand-light" />
-                <span className="text-white/40 text-[10px] font-arabic tracking-wider">المؤسسة</span>
+                <Building2 size={11} className="text-brand-blue" />
+                <span className="text-slate-400 text-[10px] font-arabic tracking-wider">المؤسسة</span>
               </div>
-              <div className="text-white/80 text-xs font-arabic font-bold truncate">{orgName}</div>
+              <div className="text-slate-700 text-xs font-arabic font-bold truncate">{orgName}</div>
             </div>
             {orgItems.map(({ label, href, icon: Icon }) => {
               const active = pathname.startsWith(href);
@@ -112,10 +115,7 @@ export function Sidebar() {
                 <Link
                   key={href}
                   href={href}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium font-arabic transition-all",
-                    active ? "bg-brand-blue text-white" : "text-white/60 hover:text-white hover:bg-white/8"
-                  )}
+                  className={cn(linkBase, active ? "bg-brand-blue text-white" : inactive)}
                 >
                   <Icon size={16} />
                   <span>{label}</span>
@@ -127,7 +127,7 @@ export function Sidebar() {
         ) : (
           <Link
             href="/org/setup"
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-arabic text-white/40 hover:text-white/70 hover:bg-white/5 transition-all"
+            className={cn(linkBase, "text-slate-400 hover:text-slate-700 hover:bg-slate-100")}
           >
             <Building2 size={16} />
             <span>إنشاء مؤسسة</span>
@@ -136,46 +136,43 @@ export function Sidebar() {
       </div>
 
       {/* ── Upgrade Banner ────────────────────────────── */}
-      <div className="mx-3 mb-3 p-3 rounded-xl border border-brand-blue/30 bg-gradient-to-br from-brand-royal/20 to-brand-blue/10">
+      <div className="mx-3 mb-3 p-3 rounded-xl border border-brand-blue/15 bg-gradient-to-br from-brand-blue/5 to-brand-cyan/5">
         <div className="flex items-center gap-2 mb-1.5">
-          <Sparkles size={14} className="text-brand-cyan" />
-          <span className="text-white text-xs font-bold font-arabic">ترقية الخطة</span>
+          <Sparkles size={14} className="text-brand-blue" />
+          <span className="text-slate-900 text-xs font-bold font-arabic">ترقية الخطة</span>
         </div>
-        <p className="text-white/55 text-xs font-arabic leading-relaxed mb-2">
+        <p className="text-slate-500 text-xs font-arabic leading-relaxed mb-2">
           احصل على مشاريع غير محدودة وكل المخرجات
         </p>
-        <Link href="/settings" className="block text-center text-xs font-bold text-brand-cyan hover:underline font-arabic">
+        <Link href="/settings" className="block text-center text-xs font-bold text-brand-blue hover:underline font-arabic">
           ترقية الآن ←
         </Link>
       </div>
 
       {/* ── Bottom ────────────────────────────────────── */}
-      <div className="px-3 pb-4 border-t border-white/10 pt-3 space-y-1">
+      <div className="px-3 pb-4 border-t border-slate-100 pt-3 space-y-1">
         {bottomItems.map(({ label, href, icon: Icon }) => (
           <Link
             key={href}
             href={href}
-            className={cn(
-              "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium font-arabic transition-all",
-              pathname === href ? "bg-brand-blue text-white" : "text-white/60 hover:text-white hover:bg-white/8"
-            )}
+            className={cn(linkBase, pathname === href ? "bg-brand-blue text-white" : inactive)}
           >
             <Icon size={18} />
             <span>{label}</span>
           </Link>
         ))}
 
-        <div className="flex items-center gap-3 px-3 py-3 mt-1 rounded-xl hover:bg-white/5 transition-all">
+        <div className="flex items-center gap-3 px-3 py-3 mt-1 rounded-xl hover:bg-slate-100 transition-all">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center text-white text-xs font-bold font-brand flex-shrink-0">
             {user?.firstName?.[0]?.toUpperCase() ?? "م"}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-white text-sm font-bold font-arabic truncate">{user?.firstName ?? "المستخدم"}</div>
-            <div className="text-white/40 text-[11px] font-latin truncate">{user?.emailAddresses?.[0]?.emailAddress}</div>
+            <div className="text-slate-900 text-sm font-bold font-arabic truncate">{user?.firstName ?? "المستخدم"}</div>
+            <div className="text-slate-400 text-[11px] font-latin truncate">{user?.emailAddresses?.[0]?.emailAddress}</div>
           </div>
           <button
             onClick={() => signOut()}
-            className="text-white/30 hover:text-white/70 transition-colors flex-shrink-0"
+            className="text-slate-300 hover:text-slate-600 transition-colors flex-shrink-0"
             title="تسجيل الخروج"
           >
             <LogOut size={16} />
