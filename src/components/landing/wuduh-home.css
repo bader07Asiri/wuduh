@@ -290,3 +290,22 @@ html{scroll-behavior:smooth}
 .nav-r .lgn{color:#fff}
 .blogo{height:46px;width:auto;display:block}.footer .blogo{height:40px}
 .wuduh-home{background:radial-gradient(1100px 640px at 100% -6%,rgba(37,99,235,.07),transparent 60%),radial-gradient(900px 600px at -6% 6%,rgba(0,180,216,.05),transparent 55%),var(--paper)}
+
+/* ===== aesthetic polish (homepage) ===== */
+/* richer feature cards + gradient icon tiles */
+.wuduh-home .fcard{background:linear-gradient(165deg,#ffffff 0%,#F7FAFF 100%)}
+.wuduh-home .fcard:hover{box-shadow:0 32px 64px -30px rgba(37,99,235,.30);border-color:rgba(37,99,235,.20)}
+.wuduh-home .fcard .fi{background:linear-gradient(140deg,#E9F1FE,#D9E7FE);border:1px solid #D3E2FB;box-shadow:inset 0 1px 0 #fff}
+.wuduh-home .fcard:hover .fi{background:linear-gradient(140deg,#DCE8FE,#C9DDFC)}
+/* soft brand glow behind the feature + pricing grids */
+.wuduh-home .feat-grid,.wuduh-home .plans{position:relative}
+.wuduh-home .feat-grid::before,.wuduh-home .plans::before{content:"";position:absolute;inset:-70px -30px;z-index:-1;pointer-events:none;
+  background:radial-gradient(540px 320px at 82% -10%,rgba(0,180,216,.10),transparent 60%),radial-gradient(540px 320px at 12% 110%,rgba(37,99,235,.10),transparent 60%)}
+/* faint focus-rings watermark inside content sections */
+.wuduh-home #features .wrap,.wuduh-home #pricing .wrap,.wuduh-home #outputs .wrap{position:relative}
+.wuduh-home #features .wrap::after{content:"";position:absolute;top:-40px;left:-120px;width:360px;height:360px;z-index:-1;pointer-events:none;opacity:.55;
+  background:radial-gradient(circle,transparent 30%,rgba(203,218,240,.35) 31%,transparent 33%,transparent 46%,rgba(214,226,243,.3) 47%,transparent 49%,transparent 62%,rgba(225,234,247,.25) 63%,transparent 65%)}
+/* gradient accent under section titles */
+.wuduh-home .sec-head h2{position:relative;display:inline-block}
+/* subtle tint so pure-white sections breathe */
+.wuduh-home #features{background:linear-gradient(180deg,transparent,rgba(240,245,251,.5) 120%)}

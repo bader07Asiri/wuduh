@@ -31,9 +31,9 @@
     -webkit-font-smoothing: antialiased;
     background-color: #FBFCFE;
     background-image:
-      radial-gradient(900px 520px at 100% -8%, rgba(37, 99, 235, 0.06), transparent 60%),
-      radial-gradient(760px 480px at -8% 4%, rgba(0, 180, 216, 0.05), transparent 55%),
-      radial-gradient(760px 560px at 50% 120%, rgba(23, 48, 106, 0.05), transparent 60%);
+      radial-gradient(820px 520px at 100% -6%, rgba(37, 99, 235, 0.13), transparent 58%),
+      radial-gradient(720px 460px at -6% 3%, rgba(0, 180, 216, 0.11), transparent 55%),
+      radial-gradient(760px 560px at 50% 122%, rgba(23, 48, 106, 0.09), transparent 60%);
     background-attachment: fixed;
     color: #0E1B33;
   }
