@@ -13,8 +13,8 @@ export function Card({ children, className, hover, padding = "md" }: CardProps) 
   return (
     <div
       className={cn(
-        "bg-white rounded-2xl shadow-card border border-slate-100",
-        hover && "hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer",
+        "bg-white rounded-2xl border border-slate-100/90 shadow-[0_1px_2px_rgba(16,32,72,0.04),0_16px_40px_-24px_rgba(16,32,72,0.16)] transition-all duration-300",
+        hover && "hover:-translate-y-1 hover:border-brand-blue/20 hover:shadow-[0_1px_2px_rgba(16,32,72,0.04),0_26px_52px_-24px_rgba(37,99,235,0.24)] cursor-pointer",
         paddingMap[padding],
         className
       )}

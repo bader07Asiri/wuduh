@@ -241,3 +241,12 @@ html{scroll-behavior:smooth}
 .stat{border-top:2px solid transparent;background-clip:padding-box}
 .stat:hover{border-top-color:var(--accent)}
 .sec-head h2{position:relative}
+
+/* aesthetic depth — soft brand glows on inner pages */
+.wuduh-page{
+  background-image:
+    radial-gradient(900px 520px at 100% -8%, rgba(37,99,235,.06), transparent 60%),
+    radial-gradient(760px 480px at -8% 4%, rgba(0,180,216,.05), transparent 55%),
+    radial-gradient(760px 560px at 50% 122%, rgba(23,48,106,.05), transparent 60%);
+  background-attachment: fixed;
+}
