@@ -2,7 +2,7 @@ import { SignUp } from "@clerk/nextjs";
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen bg-brand-gradient flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-b from-white to-[#EDF2FB] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-8">
@@ -27,11 +27,11 @@ export default function SignupPage() {
         />
 
         {/* PDPL — consent notice */}
-        <p className="text-center text-white/70 text-xs font-arabic mt-5 leading-relaxed">
+        <p className="text-center text-slate-500 text-xs font-arabic mt-5 leading-relaxed">
           بإنشائك حساباً في وضوح، فإنك توافق على{" "}
-          <a href="/terms" className="underline text-white font-semibold">شروط الاستخدام</a>{" "}
+          <a href="/terms" className="underline text-brand-blue font-semibold">شروط الاستخدام</a>{" "}
           و{" "}
-          <a href="/privacy" className="underline text-white font-semibold">سياسة الخصوصية</a>{" "}
+          <a href="/privacy" className="underline text-brand-blue font-semibold">سياسة الخصوصية</a>{" "}
           ومعالجة بياناتك وفق نظام حماية البيانات الشخصية.
         </p>
       </div>

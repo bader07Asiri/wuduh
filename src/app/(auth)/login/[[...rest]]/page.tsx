@@ -2,7 +2,7 @@ import { SignIn } from "@clerk/nextjs";
 
 export default function LoginCatchAllPage() {
   return (
-    <div className="min-h-screen bg-brand-gradient flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-b from-white to-[#EDF2FB] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-8">
