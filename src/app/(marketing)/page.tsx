@@ -1,23 +1,12 @@
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { Hero } from "@/components/landing/Hero";
-import { Features } from "@/components/landing/Features";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { Pricing } from "@/components/landing/Pricing";
-import { CTA } from "@/components/landing/CTA";
+import type { Metadata } from "next";
+import { WuduhHome } from "@/components/landing/WuduhHome";
+
+export const metadata: Metadata = {
+  title: "وضوح | إدارة مشاريع باحترافية PMP",
+  description:
+    "وضوح يحوّل فكرة مشروعك — من الغموض إلى خطة واضحة — إلى حزمة مستندات احترافية وفق معايير PMI، بالعربية، خلال دقائق.",
+};
 
 export default function LandingPage() {
-  return (
-    <>
-      <Navbar />
-      <main>
-        <Hero />
-        <Features />
-        <HowItWorks />
-        <Pricing />
-        <CTA />
-      </main>
-      <Footer />
-    </>
-  );
+  return <WuduhHome />;
 }
