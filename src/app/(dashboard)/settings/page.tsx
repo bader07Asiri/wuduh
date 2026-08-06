@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Check, Zap, CreditCard, User, Shield } from "lucide-react";
+import { Check, Zap, CreditCard, User, Shield, Download, Trash2 } from "lucide-react";
 import { PLANS } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,9 @@ export default function SettingsPage() {
       .catch(() => {});
   }, []);
 
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const handleUpgrade = async (plan: PlanKey) => {
     setLoadingPlan(plan);
     try {
@@ -39,6 +42,41 @@ export default function SettingsPage() {
       toast.error("حدث خطأ، حاول مرة أخرى");
     } finally {
       setLoadingPlan(null);
+    }
+  };
+
+  // حق صاحب البيانات: تصدير نسخة من بياناتك (PDPL)
+  const exportData = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/me/export");
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "wuduh-data-export.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("تعذّر تصدير البيانات، حاول لاحقاً");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // حق صاحب البيانات: حذف الحساب وكل البيانات نهائياً (PDPL)
+  const deleteAccount = async () => {
+    if (!window.confirm("سيتم حذف حسابك وكل مشاريعك ومخرجاتك نهائياً ولا يمكن التراجع. هل أنت متأكد؟")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/me/delete", { method: "POST" });
+      if (!res.ok) throw new Error();
+      toast.success("تم حذف حسابك وبياناتك");
+      window.location.href = "/";
+    } catch {
+      toast.error("تعذّر حذف الحساب، تواصل معنا للمساعدة");
+      setDeleting(false);
     }
   };
 
@@ -171,6 +209,25 @@ export default function SettingsPage() {
             </Button>
           </div>
         )}
+      </Card>
+
+      {/* Privacy & Data rights (PDPL) */}
+      <Card className="mt-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Shield size={18} className="text-brand-blue" />
+          <div>
+            <CardTitle>الخصوصية وبياناتك</CardTitle>
+            <CardDescription>وفق نظام حماية البيانات الشخصية، لك حق الاطّلاع على بياناتك وتصديرها وحذف حسابك</CardDescription>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button variant="outline" className="flex-1" icon={<Download size={16} />} loading={exporting} onClick={exportData}>
+            تصدير بياناتي
+          </Button>
+          <Button variant="ghost" className="text-red-500 hover:bg-red-50" icon={<Trash2 size={16} />} loading={deleting} onClick={deleteAccount}>
+            حذف الحساب نهائياً
+          </Button>
+        </div>
       </Card>
     </div>
   );

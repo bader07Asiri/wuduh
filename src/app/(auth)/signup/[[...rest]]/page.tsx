@@ -25,6 +25,15 @@ export default function SignupPage() {
             },
           }}
         />
+
+        {/* PDPL — consent notice */}
+        <p className="text-center text-white/70 text-xs font-arabic mt-5 leading-relaxed">
+          بإنشائك حساباً في وضوح، فإنك توافق على{" "}
+          <a href="/terms" className="underline text-white font-semibold">شروط الاستخدام</a>{" "}
+          و{" "}
+          <a href="/privacy" className="underline text-white font-semibold">سياسة الخصوصية</a>{" "}
+          ومعالجة بياناتك وفق نظام حماية البيانات الشخصية.
+        </p>
       </div>
     </div>
   );
