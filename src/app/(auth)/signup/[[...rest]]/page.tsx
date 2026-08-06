@@ -7,7 +7,9 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/wuduh-assets/logo-full-light.png" alt="وضوح Wuduh" className="h-20 w-auto object-contain" />
+          <a href="/" aria-label="الصفحة الرئيسية">
+            <img src="/wuduh-assets/logo-full-light.png" alt="وضوح Wuduh" className="h-20 w-auto object-contain" />
+          </a>
         </div>
 
         <SignUp
