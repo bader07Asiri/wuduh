@@ -9,6 +9,8 @@ export interface AIGenerateOptions {
   user: string;
   maxTokens?: number;
   model?: string;
+  // Called with real token usage from the Anthropic response (for cost tracking).
+  onUsage?: (u: { inputTokens: number; outputTokens: number; model: string }) => void | Promise<void>;
 }
 
 export async function generateWithClaude(options: AIGenerateOptions): Promise<object> {
@@ -20,6 +22,15 @@ export async function generateWithClaude(options: AIGenerateOptions): Promise<ob
     system,
     messages: [{ role: "user", content: user }],
   });
+
+  // Record actual token usage (tokens are billed even if the response was truncated).
+  try {
+    await options.onUsage?.({
+      inputTokens: response.usage?.input_tokens ?? 0,
+      outputTokens: response.usage?.output_tokens ?? 0,
+      model,
+    });
+  } catch { /* logging must never break generation */ }
 
   if (response.stop_reason === "max_tokens") {
     throw new Error(

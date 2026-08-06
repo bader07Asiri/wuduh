@@ -7,6 +7,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { generateWithClaude } from "@/lib/ai/client";
+import { logAiUsage } from "@/lib/ai/usage-log";
 import {
   buildCharterPrompt,
   buildRiskRegisterPrompt,
@@ -172,6 +173,7 @@ export async function POST(req: NextRequest) {
         user: JSON.stringify(agendaData),
         maxTokens: 8000,
         model: "claude-haiku-4-5-20251001",
+        onUsage: (u) => logAiUsage(supabase, { userId, projectId, promptType: "translate", model: u.model }, u),
       })) as Record<string, unknown>;
     } catch {
       effectiveAgenda = agendaData;
@@ -221,6 +223,7 @@ export async function POST(req: NextRequest) {
               user: built.user + langDirective,
               maxTokens: 6000,
               model: "claude-haiku-4-5-20251001",
+              onUsage: (u) => logAiUsage(supabase, { userId, projectId, promptType: type, model: u.model }, u),
             })) as Record<string, unknown>;
           } catch {
             // Fall back to agenda data if AI call fails

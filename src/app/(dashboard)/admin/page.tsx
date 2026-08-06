@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/Input";
 import {
   Users, FolderOpen, FileText, Building2,
   TrendingUp, Crown, Zap, Star, Shield,
-  Search, Palette, RotateCcw, Save, ChevronDown, Upload, ImageIcon
+  Search, Palette, RotateCcw, Save, ChevronDown, Upload, ImageIcon, Wallet
 } from "lucide-react";
 import { toast } from "sonner";
 import { PLANS } from "@/types";
+import { FinanceTab } from "@/components/admin/FinanceTab";
 
 // =================== Types ===================
 interface AdminStats {
@@ -89,7 +90,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 // =================== Main Page ===================
 export default function AdminPage() {
-  const [tab, setTab] = useState<"stats" | "users" | "theme">("stats");
+  const [tab, setTab] = useState<"stats" | "users" | "theme" | "finance">("stats");
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -127,6 +128,7 @@ export default function AdminPage() {
 
   const tabs = [
     { key: "stats", label: "الإحصائيات", icon: TrendingUp },
+    { key: "finance", label: "المالية", icon: Wallet },
     { key: "users", label: "إدارة المستخدمين", icon: Users },
     { key: "theme", label: "التصميم والثيم", icon: Palette },
   ] as const;
@@ -165,6 +167,7 @@ export default function AdminPage() {
       </div>
 
       {tab === "stats" && <StatsTab stats={stats} totalPaid={totalPaid} />}
+      {tab === "finance" && <FinanceTab />}
       {tab === "users" && <UsersTab />}
       {tab === "theme" && <ThemeTab />}
     </div>

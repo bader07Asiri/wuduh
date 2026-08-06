@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithClaude } from "@/lib/ai/client";
+import { logAiUsage } from "@/lib/ai/usage-log";
 import { checkAIUsage } from "@/lib/ai/usage-guard";
 import {
   buildAgendaPrompt,
@@ -93,6 +94,7 @@ export async function POST(req: NextRequest) {
       ...prompt,
       maxTokens: 8000,
       model: "claude-haiku-4-5-20251001",
+      onUsage: (u) => logAiUsage(supabase, { userId, projectId, promptType: type, model: u.model }, u),
     });
 
     // Save agenda back to project
