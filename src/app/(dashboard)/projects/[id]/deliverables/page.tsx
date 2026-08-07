@@ -18,47 +18,48 @@ interface DeliverableOption {
   recommended?: boolean;
 }
 
+// الصيغ مبنية على Office (Word/Excel/PowerPoint) لأنها تعرض العربية بشكل صحيح ومتسق
 const DELIVERABLE_GROUPS: { name: string; items: DeliverableOption[] }[] = [
   {
     name: "وثائق التخطيط الأساسية",
     items: [
-      { type: "project_charter",     formats: ["pdf", "docx"], recommended: true },
-      { type: "project_plan",        formats: ["pdf", "docx"], recommended: true },
-      { type: "scope_statement",     formats: ["pdf", "docx"] },
-      { type: "wbs",                 formats: ["pdf", "xlsx"], recommended: true },
-      { type: "stakeholder_register",formats: ["pdf", "xlsx"] },
+      { type: "project_charter",     formats: ["docx"], recommended: true },
+      { type: "project_plan",        formats: ["docx"], recommended: true },
+      { type: "scope_statement",     formats: ["docx"] },
+      { type: "wbs",                 formats: ["xlsx"], recommended: true },
+      { type: "stakeholder_register",formats: ["docx"] },
     ],
   },
   {
     name: "الجداول الزمنية",
     items: [
-      { type: "gantt_chart",   formats: ["pdf", "xlsx"], recommended: true },
-      { type: "schedule",      formats: ["pdf", "xlsx"] },
-      { type: "milestone_chart", formats: ["pdf"] },
+      { type: "gantt_chart",   formats: ["xlsx"], recommended: true },
+      { type: "schedule",      formats: ["xlsx"] },
+      { type: "milestone_chart", formats: ["docx"] },
     ],
   },
   {
     name: "الموارد والميزانية",
     items: [
-      { type: "resource_plan",  formats: ["pdf", "docx"] },
-      { type: "budget",         formats: ["pdf", "xlsx"], recommended: true },
+      { type: "resource_plan",  formats: ["docx"] },
+      { type: "budget",         formats: ["xlsx"], recommended: true },
       { type: "cost_estimates", formats: ["xlsx"] },
     ],
   },
   {
     name: "المخاطر والجودة",
     items: [
-      { type: "risk_register",  formats: ["pdf", "xlsx"], recommended: true },
-      { type: "risk_response",  formats: ["pdf", "docx"] },
-      { type: "quality_plan",   formats: ["pdf", "docx"] },
-      { type: "quality_checklist", formats: ["pdf"] },
+      { type: "risk_register",  formats: ["xlsx"], recommended: true },
+      { type: "risk_response",  formats: ["docx"] },
+      { type: "quality_plan",   formats: ["docx"] },
+      { type: "quality_checklist", formats: ["docx"] },
     ],
   },
   {
     name: "التواصل والتقارير",
     items: [
-      { type: "communication_plan", formats: ["pdf", "docx"] },
-      { type: "status_report",      formats: ["pdf", "docx"] },
+      { type: "communication_plan", formats: ["docx"] },
+      { type: "status_report",      formats: ["docx"] },
       { type: "meeting_minutes",    formats: ["docx"] },
     ],
   },
@@ -73,9 +74,9 @@ const DELIVERABLE_GROUPS: { name: string; items: DeliverableOption[] }[] = [
   {
     name: "إغلاق المشروع",
     items: [
-      { type: "closure_report",    formats: ["pdf", "docx"] },
-      { type: "lessons_learned",   formats: ["pdf", "docx"] },
-      { type: "closure_checklist", formats: ["pdf"] },
+      { type: "closure_report",    formats: ["docx"] },
+      { type: "lessons_learned",   formats: ["docx"] },
+      { type: "closure_checklist", formats: ["docx"] },
     ],
   },
 ];
@@ -106,6 +107,8 @@ export default function DeliverablesPage() {
   const [useOrgIdentity, setUseOrgIdentity] = useState(false);
   const [includeSignature, setIncludeSignature] = useState(false);
   const [outputLang, setOutputLang] = useState<"ar" | "en">("ar");
+  const [useCustom, setUseCustom] = useState(false);
+  const [customColors, setCustomColors] = useState({ dark: "#0F2057", primary: "#2563EB", accent: "#0EA5E9", light: "#F8FAFC" });
   const activeTheme = DOC_THEMES.find(t => t.id === themeId) ?? DOC_THEMES[0];
   const filteredThemes = themeSearch
     ? DOC_THEMES.filter(t => (t.name + " " + t.nameEn).toLowerCase().includes(themeSearch.toLowerCase()))
@@ -200,7 +203,7 @@ export default function DeliverablesPage() {
       const res = await fetch("/api/deliverables/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: id, deliverables: toGenerate, themeId, useOrgIdentity, includeSignature, outputLang }),
+        body: JSON.stringify({ projectId: id, deliverables: toGenerate, themeId, customColors: useCustom ? customColors : undefined, useOrgIdentity, includeSignature, outputLang }),
       });
 
       if (!res.ok) throw new Error();
@@ -272,12 +275,43 @@ export default function DeliverablesPage() {
 
         {showThemes && (
           <div className="mt-4">
+            {/* ألوان مخصّصة — تُطبّق بدل الثيم الجاهز */}
+            <div className="mb-3 rounded-xl border border-slate-200 p-3">
+              <label className="flex items-center gap-2 cursor-pointer mb-2">
+                <input type="checkbox" checked={useCustom} onChange={e => setUseCustom(e.target.checked)} className="w-4 h-4 accent-brand-blue" />
+                <span className="text-sm font-bold font-arabic text-slate-700">استخدام ألوان علامتي الخاصة</span>
+              </label>
+              {useCustom && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                  {([
+                    ["dark", "الداكن (الترويسة)"],
+                    ["primary", "الأساسي"],
+                    ["accent", "المميّز"],
+                    ["light", "الفاتح (الخلفية)"],
+                  ] as const).map(([key, label]) => (
+                    <label key={key} className="flex flex-col gap-1">
+                      <span className="text-[11px] font-arabic text-slate-500">{label}</span>
+                      <span className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-2 py-1">
+                        <input
+                          type="color"
+                          value={customColors[key]}
+                          onChange={e => setCustomColors(c => ({ ...c, [key]: e.target.value }))}
+                          className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0"
+                        />
+                        <span className="text-[10px] font-latin text-slate-400 uppercase">{customColors[key]}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
             <input
               type="text"
               value={themeSearch}
               onChange={e => setThemeSearch(e.target.value)}
               placeholder="ابحث عن ثيم بالاسم..."
-              className="w-full mb-3 rounded-xl border border-slate-200 px-4 py-2 text-sm font-arabic focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+              disabled={useCustom}
+              className={cn("w-full mb-3 rounded-xl border border-slate-200 px-4 py-2 text-sm font-arabic focus:outline-none focus:ring-2 focus:ring-brand-blue/30", useCustom && "opacity-40 pointer-events-none")}
             />
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-72 overflow-y-auto pr-1">
               {filteredThemes.map(t => (

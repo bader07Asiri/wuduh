@@ -11,22 +11,28 @@ import { logAiUsage } from "@/lib/ai/usage-log";
 import {
   buildCharterPrompt,
   buildRiskRegisterPrompt,
-  buildWBSPrompt,
-  buildCommunicationPlanPrompt,
-  buildGanttPrompt,
   buildStatusReportPrompt,
-  buildQualityPlanPrompt,
+  buildDocumentPrompt,
 } from "@/lib/ai/prompts";
 import type { DeliverableType, DeliverableFormat } from "@/types";
 
 // File generators
 import { generateCharterPDF, generateRiskRegisterPDF, generateProjectPlanPDF } from "@/lib/generators/pdf";
-import { generateCharterDOCX, generateProjectPlanDOCX, generateRiskRegisterDOCX } from "@/lib/generators/docx";
+import { generateCharterDOCX, generateProjectPlanDOCX, generateRiskRegisterDOCX, generateGenericDOCX } from "@/lib/generators/docx";
 import { generateWBSXLSX, generateRiskRegisterXLSX, generateGanttXLSX, generateBudgetXLSX } from "@/lib/generators/xlsx";
 import { generateKickoffPPTX, generateStakeholderPPTX, generateProgressReportPPTX } from "@/lib/generators/pptx";
-import { getTheme } from "@/lib/themes";
+import { getTheme, type DocTheme } from "@/lib/themes";
+import { docTitle } from "@/lib/generators/labels";
 import { resolveBranding, type Plan, type OrgBranding } from "@/lib/branding";
-import type { GenOptions } from "@/lib/generators/types";
+import type { GenOptions, DocLang } from "@/lib/generators/types";
+
+// أنواع المستندات النصية التي تُبنى عبر المولّد العام (Word)
+const GENERIC_DOC_TYPES = new Set<DeliverableType>([
+  "scope_statement", "resource_plan", "risk_response", "quality_plan",
+  "communication_plan", "status_report", "closure_report", "lessons_learned",
+  "meeting_minutes", "stakeholder_register", "earned_value",
+  "milestone_chart", "quality_checklist", "closure_checklist",
+]);
 
 interface DeliverableRequest {
   type: DeliverableType;
@@ -46,6 +52,8 @@ async function generateFile(
   let contentType: string;
   let ext: string;
 
+  const lang: DocLang = opts?.lang ?? "ar";
+
   if (format === "pdf") {
     ext = "pdf";
     contentType = "application/pdf";
@@ -56,22 +64,23 @@ async function generateFile(
     ext = "docx";
     contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     if (type === "project_charter") buffer = await generateCharterDOCX(aiData, projectName, opts);
+    else if (type === "project_plan") buffer = await generateProjectPlanDOCX(agendaData, projectName, opts);
     else if (type === "risk_register") buffer = await generateRiskRegisterDOCX(aiData, projectName, opts);
-    else buffer = await generateProjectPlanDOCX(agendaData, projectName, opts);
+    else buffer = await generateGenericDOCX(aiData, projectName, docTitle(type, lang), opts);
   } else if (format === "xlsx") {
     ext = "xlsx";
     contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     if (type === "wbs") buffer = await generateWBSXLSX(agendaData, projectName, opts);
     else if (type === "risk_register") buffer = await generateRiskRegisterXLSX(aiData, projectName, opts);
-    else if (type === "gantt_chart") buffer = await generateGanttXLSX(agendaData, projectName, opts);
+    else if (type === "gantt_chart" || type === "schedule") buffer = await generateGanttXLSX(agendaData, projectName, opts);
     else buffer = await generateBudgetXLSX(agendaData, projectName, opts);
   } else {
     // pptx
     ext = "pptx";
     contentType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-    if (type === "stakeholder_register") {
+    if (type === "stakeholder_presentation") {
       buffer = await generateStakeholderPPTX(agendaData, projectName, opts);
-    } else if (type === "status_report") {
+    } else if (type === "progress_presentation" || type === "status_report") {
       buffer = await generateProgressReportPPTX(aiData, projectName, opts);
     } else {
       buffer = await generateKickoffPPTX(agendaData, projectName, opts);
@@ -89,6 +98,7 @@ export async function POST(req: NextRequest) {
     projectId,
     deliverables,
     themeId,
+    customColors,
     useOrgIdentity,
     includeSignature,
     outputLang,
@@ -96,10 +106,14 @@ export async function POST(req: NextRequest) {
     projectId: string;
     deliverables: DeliverableRequest[];
     themeId?: string;
+    customColors?: { dark?: string; primary?: string; accent?: string; light?: string };
     useOrgIdentity?: boolean;
     includeSignature?: boolean;
     outputLang?: "ar" | "en";
   } = await req.json();
+
+  const lang: DocLang = outputLang === "en" ? "en" : "ar";
+  const hex = (v?: string, fb?: string) => (v && /^#?[0-9a-fA-F]{6}$/.test(v) ? (v.startsWith("#") ? v : `#${v}`) : fb);
 
   const langDirective =
     outputLang === "en"
@@ -161,7 +175,21 @@ export async function POST(req: NextRequest) {
   }
 
   const branding = resolveBranding(plan, org, { themeId, useOrgIdentity, includeSignature });
-  const genOptions: GenOptions = { theme: getTheme(themeId), branding };
+
+  // ثيم مخصّص بألوان المستخدم إن وُجدت، وإلا الثيم الجاهز
+  const base = getTheme(themeId);
+  const customTheme: DocTheme | null = customColors
+    ? {
+        id: "custom",
+        name: "ألوان مخصصة",
+        nameEn: "Custom",
+        dark: hex(customColors.dark, base.dark)!,
+        primary: hex(customColors.primary, base.primary)!,
+        accent: hex(customColors.accent, base.accent)!,
+        light: hex(customColors.light, base.light)!,
+      }
+    : null;
+  const genOptions: GenOptions = { theme: customTheme ?? base, branding, lang };
 
   // إذا اختار الإنجليزية: ترجم بيانات الأجندة مرة واحدة لتخرج كل المستندات إنجليزية
   let effectiveAgenda = agendaData;
@@ -180,16 +208,38 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // AI prompt builders
-  const promptBuilders: Partial<Record<DeliverableType, () => { system: string; user: string }>> = {
-    project_charter:      () => buildCharterPrompt(projectForm, effectiveAgenda),
-    risk_register:        () => buildRiskRegisterPrompt(projectForm, effectiveAgenda),
-    wbs:                  () => buildWBSPrompt(projectForm, effectiveAgenda),
-    communication_plan:   () => buildCommunicationPlanPrompt(projectForm, effectiveAgenda),
-    gantt_chart:          () => buildGanttPrompt(projectForm, effectiveAgenda),
-    status_report:        () => buildStatusReportPrompt(projectForm, effectiveAgenda),
-    quality_plan:         () => buildQualityPlanPrompt(projectForm),
+  // تمرير حجم الفريق والمدة الفعلية للمولّدات (تفادي 0 عضو / 0 أسبوع)
+  const durWeeks = (() => {
+    const s = new Date(project.start_date).getTime();
+    const e = new Date(project.end_date).getTime();
+    return Number.isFinite(s) && Number.isFinite(e) && e > s ? Math.ceil((e - s) / (7 * 86400000)) : 0;
+  })();
+  effectiveAgenda = {
+    ...effectiveAgenda,
+    duration_weeks: (effectiveAgenda.duration_weeks as number) || durWeeks || 12,
+    team_size: project.team_size ?? 0,
+    team_size_recommended: (effectiveAgenda.team_size_recommended as number) || project.team_size || 0,
   };
+
+  // اختيار موجّه AI المناسب لكل (نوع، صيغة)
+  function pickBuilder(type: DeliverableType, format: DeliverableFormat): (() => { system: string; user: string }) | null {
+    if (format === "docx" || format === "pdf") {
+      if (type === "project_charter") return () => buildCharterPrompt(projectForm, effectiveAgenda);
+      if (type === "risk_register") return () => buildRiskRegisterPrompt(projectForm, effectiveAgenda);
+      if (type === "project_plan") return null; // يُبنى من الأجندة
+      if (GENERIC_DOC_TYPES.has(type)) return () => buildDocumentPrompt(type, projectForm, effectiveAgenda);
+      return null;
+    }
+    if (format === "xlsx") {
+      if (type === "risk_register") return () => buildRiskRegisterPrompt(projectForm, effectiveAgenda);
+      return null; // wbs/gantt/schedule/budget/cost تُبنى من الأجندة
+    }
+    if (format === "pptx") {
+      if (type === "progress_presentation" || type === "status_report") return () => buildStatusReportPrompt(projectForm, effectiveAgenda);
+      return null; // kickoff/stakeholder تُبنى من الأجندة
+    }
+    return null;
+  }
 
   const results = await Promise.allSettled(
     deliverables.map(async ({ type, format }) => {
@@ -214,7 +264,7 @@ export async function POST(req: NextRequest) {
       try {
         // Get AI data
         let aiData: Record<string, unknown> = {};
-        const builder = promptBuilders[type];
+        const builder = pickBuilder(type, format);
         if (builder) {
           try {
             const built = builder();

@@ -5,7 +5,8 @@
 
 import ExcelJS from "exceljs";
 import { getTheme } from "@/lib/themes";
-import type { GenOptions } from "./types";
+import type { GenOptions, DocLang } from "./types";
+import { L, isRTL, type DocStrings } from "./labels";
 
 
 // Brand colors
@@ -15,7 +16,6 @@ let ACCENT  = "0EA5E9";
 const GOLD    = "F59E0B";
 const SUCCESS = "10B981";
 const DANGER  = "EF4444";
-const WARNING = "F97316";
 const BG_LIGHT = "F8FAFC";
 const BORDER  = "E2E8F0";
 const TEXT    = "0F172A";
@@ -23,21 +23,30 @@ const TEXT_MID = "334155";
 const TEXT_LIGHT = "64748B";
 const WHITE   = "FFFFFF";
 
-// حالة الثيم والهوية (تُضبط لكل مستند عبر applyTheme)
+// حالة الثيم واللغة والهوية (تُضبط لكل مستند عبر applyTheme)
 let BRAND = "";
-let BRAND_INITIAL = "";
 let WM = false;
 let WM_TEXT = "";
+let LANG: DocLang = "ar";
+let RTL = true;
+let S: DocStrings = L("ar");
 function applyTheme(opts?: GenOptions) {
-  const t = getTheme(opts?.theme?.id ?? null);
-  NAVY = t.dark.replace("#", "");
-  PRIMARY = t.primary.replace("#", "");
-  ACCENT = t.accent.replace("#", "");
+  const t = opts?.theme ?? getTheme(null);
+  NAVY = (t.dark || "#0F2057").replace("#", "");
+  PRIMARY = (t.primary || "#2563EB").replace("#", "");
+  ACCENT = (t.accent || "#0EA5E9").replace("#", "");
   const org = opts?.branding?.org ?? null;
   BRAND = org?.name ?? "";
-  BRAND_INITIAL = BRAND ? Array.from(BRAND)[0] : "";
   WM = !!opts?.branding?.showWatermark;
   WM_TEXT = opts?.branding?.watermarkText ?? "وضوح";
+  LANG = opts?.lang ?? "ar";
+  RTL = isRTL(LANG);
+  S = L(LANG);
+}
+
+// يضبط ورقة العمل على الاتجاه الصحيح (RTL للعربية)
+function setSheetDir(ws: ExcelJS.Worksheet) {
+  ws.views = (ws.views && ws.views.length ? ws.views : [{}]).map(v => ({ ...v, rightToLeft: RTL }));
 }
 
 
@@ -75,19 +84,20 @@ function styleDataRow(row: ExcelJS.Row, even: boolean) {
 }
 
 function addCoverSheet(wb: ExcelJS.Workbook, title: string, projectName: string) {
-  const ws = wb.addWorksheet("Cover", { properties: { tabColor: { argb: `FF${NAVY}` } } });
+  const ws = wb.addWorksheet(RTL ? "الغلاف" : "Cover", { properties: { tabColor: { argb: `FF${NAVY}` } } });
+  setSheetDir(ws);
   ws.getColumn(1).width = 10;
   ws.getColumn(2).width = 60;
   ws.getColumn(3).width = 20;
 
   // Brand header row
   ws.mergeCells("B2:C3");
-  ws.getCell("B2").value = BRAND || "خطة إدارة المشروع";
+  ws.getCell("B2").value = BRAND || "وضوح";
   ws.getCell("B2").font = { bold: true, size: 24, color: { argb: `FF${PRIMARY}` }, name: "Calibri" };
   ws.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
 
   ws.mergeCells("B4:C4");
-  ws.getCell("B4").value = "PMI/PMBOK Guide 7th Edition Compliant AI Platform";
+  ws.getCell("B4").value = S.compliant;
   ws.getCell("B4").font = { size: 11, color: { argb: `FF${TEXT_LIGHT}` }, italic: true, name: "Calibri" };
   ws.getCell("B4").alignment = { horizontal: "center" };
 
@@ -105,9 +115,9 @@ function addCoverSheet(wb: ExcelJS.Workbook, title: string, projectName: string)
 
   ws.getRow(9).height = 20;
 
-  ws.getCell("B10").value = "Generated:";
+  ws.getCell("B10").value = `${S.generated}:`;
   ws.getCell("B10").font = { size: 10, color: { argb: `FF${TEXT_LIGHT}` } };
-  ws.getCell("C10").value = new Date().toLocaleDateString("en-GB");
+  ws.getCell("C10").value = new Date().toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA");
   ws.getCell("C10").font = { size: 10, color: { argb: `FF${TEXT}` } };
 }
 
@@ -120,16 +130,16 @@ export async function generateWBSXLSX(agendaData: Record<string, unknown>, proje
   wb.creator = BRAND || "Project";
   wb.created = new Date();
 
-  addCoverSheet(wb, "Work Breakdown Structure (WBS)", projectName);
+  addCoverSheet(wb, RTL ? "هيكل تجزئة العمل (WBS)" : "Work Breakdown Structure (WBS)", projectName);
 
-  const ws = wb.addWorksheet("WBS", { properties: { tabColor: { argb: `FF${PRIMARY}` } } });
+  const ws = wb.addWorksheet(RTL ? "تجزئة العمل" : "WBS", { properties: { tabColor: { argb: `FF${PRIMARY}` } } });
 
   // Freeze header row
-  ws.views = [{ state: "frozen", ySplit: 3, activeCell: "A4" }];
+  ws.views = [{ state: "frozen", ySplit: 3, activeCell: "A4", rightToLeft: RTL }];
 
   // Title row
   ws.mergeCells("A1:H1");
-  ws.getCell("A1").value = `Work Breakdown Structure — ${projectName}`;
+  ws.getCell("A1").value = `${RTL ? "هيكل تجزئة العمل" : "Work Breakdown Structure"} — ${projectName}`;
   ws.getCell("A1").font = { bold: true, size: 14, color: { argb: `FF${WHITE}` }, name: "Calibri" };
   ws.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${NAVY}` } };
   ws.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
@@ -137,14 +147,16 @@ export async function generateWBSXLSX(agendaData: Record<string, unknown>, proje
 
   // Sub-title row
   ws.mergeCells("A2:H2");
-  ws.getCell("A2").value = "PMI/PMBOK Guide 7th Edition";
+  ws.getCell("A2").value = S.standard;
   ws.getCell("A2").font = { size: 10, color: { argb: `FF${WHITE}` }, italic: true };
   ws.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${PRIMARY}` } };
   ws.getCell("A2").alignment = { horizontal: "center" };
   ws.getRow(2).height = 22;
 
   // Headers
-  const headers = ["WBS Code", "Work Package", "Phase", "Description", "Duration (days)", "Effort (hrs)", "Dependencies", "Deliverable"];
+  const headers = RTL
+    ? ["رمز WBS", "حزمة العمل", "المرحلة", "الوصف", "المدة (أيام)", "الجهد (ساعات)", "الاعتماديات", "المخرج"]
+    : ["WBS Code", "Work Package", "Phase", "Description", "Duration (days)", "Effort (hrs)", "Dependencies", "Deliverable"];
   ws.addRow(headers);
   styleHeaderRow(ws.lastRow!);
 
@@ -184,7 +196,7 @@ export async function generateWBSXLSX(agendaData: Record<string, unknown>, proje
         `${pi + 1}.${ti + 1}`,
         task.name,
         phase.name,
-        `Work package for ${task.name}`,
+        `${RTL ? "حزمة عمل لـ" : "Work package for"} ${task.name}`,
         task.duration_days || 5,
         task.effort_hours || 20,
         (task.dependencies || []).join(", ") || "—",
@@ -197,7 +209,7 @@ export async function generateWBSXLSX(agendaData: Record<string, unknown>, proje
 
   // Summary stats at bottom
   ws.addRow([]);
-  const summaryRow = ws.addRow(["Summary", "", "", "", `=SUM(E4:E${ws.rowCount - 1})`, `=SUM(F4:F${ws.rowCount - 1})`, "", ""]);
+  const summaryRow = ws.addRow([RTL ? "الإجمالي" : "Summary", "", "", "", `=SUM(E4:E${ws.rowCount - 1})`, `=SUM(F4:F${ws.rowCount - 1})`, "", ""]);
   styleHeaderRow(summaryRow, SUCCESS);
 
   return wb.xlsx.writeBuffer() as unknown as Promise<Uint8Array>;
@@ -212,34 +224,44 @@ export async function generateRiskRegisterXLSX(data: Record<string, unknown>, pr
   wb.creator = BRAND || "Project";
   wb.created = new Date();
 
-  addCoverSheet(wb, "Risk Register", projectName);
+  addCoverSheet(wb, S.riskRegister, projectName);
 
   // Dashboard sheet
-  const dash = wb.addWorksheet("Dashboard", { properties: { tabColor: { argb: `FF${GOLD}` } } });
+  const dash = wb.addWorksheet(RTL ? "لوحة المخاطر" : "Dashboard", { properties: { tabColor: { argb: `FF${GOLD}` } } });
+  setSheetDir(dash);
   const summary = (data.summary as {total_risks:number;critical:number;high:number;medium:number;low:number;overall_risk_level:string}) || {};
+  // احتساب احتياطي من المخاطر عند غياب الملخّص
+  const risksArr = (data.risks as Array<{risk_level?:string}>) || [];
+  const cnt = (k: string) => risksArr.filter(r => (r.risk_level || "").toLowerCase().includes(k)).length;
+  const sTotal = summary.total_risks || risksArr.length;
+  const sCrit = summary.critical ?? cnt("crit");
+  const sHigh = summary.high ?? cnt("high");
+  const sMed = summary.medium ?? cnt("med");
+  const sLow = summary.low ?? cnt("low");
   dash.mergeCells("A1:F1");
-  dash.getCell("A1").value = `Risk Dashboard — ${projectName}`;
+  dash.getCell("A1").value = `${RTL ? "لوحة المخاطر" : "Risk Dashboard"} — ${projectName}`;
   dash.getCell("A1").font = { bold: true, size: 14, color: { argb: `FF${WHITE}` } };
   dash.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${NAVY}` } };
   dash.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
   dash.getRow(1).height = 32;
 
-  const dashHeaders = ["Metric", "Value"];
+  const dashHeaders = RTL ? ["المؤشر", "القيمة"] : ["Metric", "Value"];
   dash.addRow(dashHeaders);
   styleHeaderRow(dash.lastRow!, PRIMARY);
 
-  const dashData = [
-    ["Total Risks", summary.total_risks || 0],
-    ["Critical Risks", summary.critical || 0],
-    ["High Risks", summary.high || 0],
-    ["Medium Risks", summary.medium || 0],
-    ["Low Risks", summary.low || 0],
-    ["Overall Risk Level", summary.overall_risk_level || "Medium"],
+  const critLabel = RTL ? "المخاطر الحرجة" : "Critical Risks";
+  const dashData: [string, string | number][] = [
+    [S.totalRisks, sTotal],
+    [critLabel, sCrit],
+    [RTL ? "المخاطر العالية" : "High Risks", sHigh],
+    [RTL ? "المخاطر المتوسطة" : "Medium Risks", sMed],
+    [RTL ? "المخاطر المنخفضة" : "Low Risks", sLow],
+    [S.overallLevel, summary.overall_risk_level || S.medium],
   ];
   dashData.forEach((row, i) => {
     const r = dash.addRow(row);
     styleDataRow(r, i % 2 === 0);
-    if (row[0] === "Critical Risks" && Number(row[1]) > 0) {
+    if (row[0] === critLabel && Number(row[1]) > 0) {
       r.getCell(2).fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FFFEECEC` } };
     }
   });
@@ -248,24 +270,26 @@ export async function generateRiskRegisterXLSX(data: Record<string, unknown>, pr
   dash.getColumn(2).width = 20;
 
   // Register sheet
-  const ws = wb.addWorksheet("Risk Register", { properties: { tabColor: { argb: `FF${DANGER}` } } });
-  ws.views = [{ state: "frozen", ySplit: 3, activeCell: "A4" }];
+  const ws = wb.addWorksheet(S.riskRegister, { properties: { tabColor: { argb: `FF${DANGER}` } } });
+  ws.views = [{ state: "frozen", ySplit: 3, activeCell: "A4", rightToLeft: RTL }];
 
   ws.mergeCells("A1:M1");
-  ws.getCell("A1").value = `Risk Register — ${projectName}`;
+  ws.getCell("A1").value = `${S.riskRegister} — ${projectName}`;
   ws.getCell("A1").font = { bold: true, size: 14, color: { argb: `FF${WHITE}` } };
   ws.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${NAVY}` } };
   ws.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
   ws.getRow(1).height = 32;
 
   ws.mergeCells("A2:M2");
-  ws.getCell("A2").value = "PMBOK 7th Edition Risk Management";
+  ws.getCell("A2").value = S.standard;
   ws.getCell("A2").font = { size: 10, italic: true, color: { argb: `FF${WHITE}` } };
   ws.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${PRIMARY}` } };
   ws.getCell("A2").alignment = { horizontal: "center" };
   ws.getRow(2).height = 20;
 
-  const headers = ["ID","Risk Statement","Category","P (1-5)","I (1-5)","Risk Score","Level","Response Strategy","Response Actions","Contingency Plan","Owner","Review Date","Status"];
+  const headers = RTL
+    ? ["الرقم","وصف الخطر","الفئة","الاحتمال (1-5)","الأثر (1-5)","درجة الخطر","المستوى","استراتيجية الاستجابة","إجراءات الاستجابة","خطة الطوارئ","المسؤول","تاريخ المراجعة","الحالة"]
+    : ["ID","Risk Statement","Category","P (1-5)","I (1-5)","Risk Score","Level","Response Strategy","Response Actions","Contingency Plan","Owner","Review Date","Status"];
   ws.addRow(headers);
   styleHeaderRow(ws.lastRow!);
 
@@ -324,14 +348,14 @@ export async function generateGanttXLSX(agendaData: Record<string, unknown>, pro
   wb.creator = BRAND || "Project";
   wb.created = new Date();
 
-  addCoverSheet(wb, "Project Schedule (Gantt)", projectName);
+  addCoverSheet(wb, RTL ? "المخطط الزمني (جانت)" : "Project Schedule (Gantt)", projectName);
 
-  const ws = wb.addWorksheet("Gantt Chart", { properties: { tabColor: { argb: `FF${SUCCESS}` } } });
+  const ws = wb.addWorksheet(RTL ? "المخطط الزمني" : "Gantt Chart", { properties: { tabColor: { argb: `FF${SUCCESS}` } } });
   const totalWeeks = Number(agendaData.duration_weeks) || 12;
 
   // Title
   ws.mergeCells(`A1:${String.fromCharCode(65 + 6 + totalWeeks)}1`);
-  ws.getCell("A1").value = `Project Schedule — ${projectName}`;
+  ws.getCell("A1").value = `${RTL ? "الجدول الزمني" : "Project Schedule"} — ${projectName}`;
   ws.getCell("A1").font = { bold: true, size: 14, color: { argb: `FF${WHITE}` } };
   ws.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${NAVY}` } };
   ws.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
@@ -352,20 +376,22 @@ export async function generateGanttXLSX(agendaData: Record<string, unknown>, pro
   }
 
   // Header row
-  const headerCells = ["#", "Task / Work Package", "Phase", "Start Wk", "End Wk", "Duration", "Owner"];
-  for (let w = 1; w <= totalWeeks; w++) headerCells.push(`W${w}`);
+  const headerCells = RTL
+    ? ["#", "المهمة / حزمة العمل", "المرحلة", "أسبوع البداية", "أسبوع النهاية", "المدة", "المسؤول"]
+    : ["#", "Task / Work Package", "Phase", "Start Wk", "End Wk", "Duration", "Owner"];
+  for (let w = 1; w <= totalWeeks; w++) headerCells.push(`${RTL ? "أ" : "W"}${w}`);
   ws.addRow(headerCells);
   styleHeaderRow(ws.lastRow!);
 
   // Freeze panes
-  ws.views = [{ state: "frozen", xSplit: 7, ySplit: 2, activeCell: "H3" }];
+  ws.views = [{ state: "frozen", xSplit: 7, ySplit: 2, activeCell: "H3", rightToLeft: RTL }];
 
   let rowNum = 0;
   const phases = (agendaData.phases as Array<{name:string; start_week:number; end_week:number; tasks?: Array<{name:string;start_week:number;end_week:number;duration_days:number;owner?:string}>}>) || [];
 
   phases.forEach((phase, pi) => {
     // Phase header
-    const phaseRow: (string | number)[] = [`${pi + 1}`, phase.name, "", phase.start_week, phase.end_week, `${phase.end_week - phase.start_week + 1} wks`, ""];
+    const phaseRow: (string | number)[] = [`${pi + 1}`, phase.name, "", phase.start_week, phase.end_week, `${phase.end_week - phase.start_week + 1} ${RTL ? "أسبوع" : "wks"}`, ""];
     for (let w = 1; w <= totalWeeks; w++) {
       phaseRow.push(w >= phase.start_week && w <= phase.end_week ? "█" : "");
     }
@@ -380,7 +406,7 @@ export async function generateGanttXLSX(agendaData: Record<string, unknown>, pro
 
     const tasks = phase.tasks || [];
     tasks.forEach((task, ti) => {
-      const taskRow: (string | number)[] = [`${pi + 1}.${ti + 1}`, task.name, phase.name, task.start_week, task.end_week, task.duration_days ? `${task.duration_days}d` : "—", task.owner || "TBD"];
+      const taskRow: (string | number)[] = [`${pi + 1}.${ti + 1}`, task.name, phase.name, task.start_week, task.end_week, task.duration_days ? `${task.duration_days}${RTL ? "ي" : "d"}` : "—", task.owner || (RTL ? "يُحدَّد" : "TBD")];
       for (let w = 1; w <= totalWeeks; w++) {
         taskRow.push(w >= task.start_week && w <= task.end_week ? "■" : "");
       }
@@ -401,13 +427,14 @@ export async function generateGanttXLSX(agendaData: Record<string, unknown>, pro
   });
 
   // Add milestones sheet
-  const msWs = wb.addWorksheet("Milestones", { properties: { tabColor: { argb: `FF${GOLD}` } } });
+  const msWs = wb.addWorksheet(RTL ? "المعالم" : "Milestones", { properties: { tabColor: { argb: `FF${GOLD}` } } });
+  setSheetDir(msWs);
   msWs.getColumn(1).width = 35;
   msWs.getColumn(2).width = 12;
   msWs.getColumn(3).width = 50;
   msWs.getColumn(4).width = 45;
 
-  msWs.addRow(["Milestone Name", "Week", "Description", "Success Criteria"]);
+  msWs.addRow(RTL ? ["اسم المعلم", "الأسبوع", "الوصف", "معيار النجاح"] : ["Milestone Name", "Week", "Description", "Success Criteria"]);
   styleHeaderRow(msWs.lastRow!, GOLD);
 
   const milestones = (agendaData.key_milestones as Array<{name:string;week:number;description:string;success_criteria:string}>) || [];
@@ -429,13 +456,14 @@ export async function generateBudgetXLSX(agendaData: Record<string, unknown>, pr
   wb.creator = BRAND || "Project";
   wb.created = new Date();
 
-  addCoverSheet(wb, "Budget Tracker", projectName);
+  addCoverSheet(wb, RTL ? "متابعة الميزانية" : "Budget Tracker", projectName);
 
-  const ws = wb.addWorksheet("Budget", { properties: { tabColor: { argb: `FF${SUCCESS}` } } });
+  const ws = wb.addWorksheet(RTL ? "الميزانية" : "Budget", { properties: { tabColor: { argb: `FF${SUCCESS}` } } });
+  setSheetDir(ws);
 
   // Title
   ws.mergeCells("A1:G1");
-  ws.getCell("A1").value = `Project Budget — ${projectName}`;
+  ws.getCell("A1").value = `${RTL ? "ميزانية المشروع" : "Project Budget"} — ${projectName}`;
   ws.getCell("A1").font = { bold: true, size: 14, color: { argb: `FF${WHITE}` } };
   ws.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${NAVY}` } };
   ws.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
@@ -449,7 +477,9 @@ export async function generateBudgetXLSX(agendaData: Record<string, unknown>, pr
   ws.getColumn(6).width = 16;
   ws.getColumn(7).width = 25;
 
-  ws.addRow(["Category", "Description", "Planned (SAR)", "Actual (SAR)", "Variance", "% Used", "Notes"]);
+  ws.addRow(RTL
+    ? ["الفئة", "الوصف", "المخطط (ر.س)", "الفعلي (ر.س)", "الفرق", "% المستخدم", "ملاحظات"]
+    : ["Category", "Description", "Planned (SAR)", "Actual (SAR)", "Variance", "% Used", "Notes"]);
   styleHeaderRow(ws.lastRow!);
 
   const phases = (agendaData.phases as Array<{name:string; description:string; tasks?: Array<{name:string; effort_hours:number}>}>) || [];
@@ -457,7 +487,7 @@ export async function generateBudgetXLSX(agendaData: Record<string, unknown>, pr
   let rowIdx = 0;
 
   phases.forEach((phase, pi) => {
-    const phaseRow = ws.addRow([phase.name, "Phase Budget", "", "", "", "", ""]);
+    const phaseRow = ws.addRow([phase.name, RTL ? "ميزانية المرحلة" : "Phase Budget", "", "", "", "", ""]);
     phaseRow.eachCell(cell => {
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${ACCENT}` } };
       cell.font = { bold: true, size: 10, color: { argb: `FF${WHITE}` } };
@@ -487,7 +517,7 @@ export async function generateBudgetXLSX(agendaData: Record<string, unknown>, pr
 
   // Totals
   ws.addRow([]);
-  const totalRow = ws.addRow(["TOTAL", "", totalPlanned, 0, { formula: `C${ws.rowCount}-D${ws.rowCount}` }, "", ""]);
+  const totalRow = ws.addRow([RTL ? "الإجمالي" : "TOTAL", "", totalPlanned, 0, { formula: `C${ws.rowCount}-D${ws.rowCount}` }, "", ""]);
   styleHeaderRow(totalRow, SUCCESS);
   totalRow.getCell(3).numFmt = "#,##0.00 SAR";
   totalRow.getCell(4).numFmt = "#,##0.00 SAR";

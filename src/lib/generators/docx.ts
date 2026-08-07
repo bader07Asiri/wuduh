@@ -1,6 +1,5 @@
 // ============================
-// وضوح | Wuduh — DOCX Generator
-// يولّد ملفات Word احترافية من بيانات AI
+// وضوح | Wuduh — DOCX Generator (عربي RTL + تسميات موحّدة + ألوان مخصصة)
 // ============================
 
 import {
@@ -11,79 +10,88 @@ import {
   convertInchesToTwip,
 } from "docx";
 import { getTheme } from "@/lib/themes";
-import type { GenOptions } from "./types";
-
+import type { GenOptions, DocLang } from "./types";
+import { L, isRTL, type DocStrings } from "./labels";
 
 // Brand colors as hex
 let NAVY    = "0F2057";
 let PRIMARY = "2563EB";
 let ACCENT  = "0EA5E9";
-const GOLD    = "F59E0B";
-const SUCCESS = "10B981";
 const BG_LIGHT = "F8FAFC";
-const BORDER  = "E2E8F0";
 const TEXT    = "0F172A";
 const TEXT_MID = "334155";
 const TEXT_LIGHT = "64748B";
 const WHITE   = "FFFFFF";
 
-// حالة الثيم والهوية (تُضبط لكل مستند عبر applyTheme)
+// حالة الثيم واللغة والهوية (تُضبط لكل مستند عبر applyTheme)
 let BRAND = "";
-let BRAND_INITIAL = "";
 let WM = false;
 let WM_TEXT = "";
+let LANG: DocLang = "ar";
+let RTL = true;
+let S: DocStrings = L("ar");
+
 function applyTheme(opts?: GenOptions) {
-  const t = getTheme(opts?.theme?.id ?? null);
-  NAVY = t.dark.replace("#", "");
-  PRIMARY = t.primary.replace("#", "");
-  ACCENT = t.accent.replace("#", "");
+  // نستخدم كائن الثيم مباشرة (يدعم الألوان المخصّصة) بدل البحث بالمعرّف
+  const t = opts?.theme ?? getTheme(null);
+  NAVY = (t.dark || "#0F2057").replace("#", "");
+  PRIMARY = (t.primary || "#2563EB").replace("#", "");
+  ACCENT = (t.accent || "#0EA5E9").replace("#", "");
   const org = opts?.branding?.org ?? null;
   BRAND = org?.name ?? "";
-  BRAND_INITIAL = BRAND ? Array.from(BRAND)[0] : "";
   WM = !!opts?.branding?.showWatermark;
   WM_TEXT = opts?.branding?.watermarkText ?? "وضوح";
+  LANG = opts?.lang ?? "ar";
+  RTL = isRTL(LANG);
+  S = L(LANG);
 }
 
+const dir = () => (RTL ? AlignmentType.RIGHT : AlignmentType.LEFT);
 
 // ============================
-// Helpers
+// Helpers (RTL-aware)
 // ============================
+function run(text: string, opts: { size?: number; bold?: boolean; color?: string; italics?: boolean } = {}): TextRun {
+  return new TextRun({
+    text: text ?? "",
+    size: opts.size ?? 20,
+    bold: opts.bold,
+    color: opts.color ?? TEXT,
+    italics: opts.italics,
+    rightToLeft: RTL,
+  });
+}
+
 function headerParagraph(text: string): Paragraph {
   return new Paragraph({
     children: [
-      new TextRun({ text: (BRAND ? BRAND + "  •  " : "") + "PMI/PMBOK Guide 7th Edition", size: 16, color: TEXT_LIGHT }),
-      new TextRun({ text: `\t${text}`, size: 16, color: TEXT_LIGHT }),
+      new TextRun({ text: (BRAND ? BRAND + "  •  " : "") + S.standard, size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
+      new TextRun({ text: `\t${text}`, size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
     ],
-    alignment: AlignmentType.LEFT,
-    tabStops: [{ type: "right", position: convertInchesToTwip(6.5) }],
+    bidirectional: RTL,
+    alignment: dir(),
+    tabStops: [{ type: RTL ? "left" : "right", position: convertInchesToTwip(6.5) }],
   });
 }
 
 function footerParagraph(): Paragraph {
   return new Paragraph({
     children: [
-      new TextRun({ text: (WM ? WM_TEXT + "  •  " : "") + (BRAND ? BRAND + "  •  " : ""), size: 16, color: TEXT_LIGHT }),
-      new TextRun({ text: new Date().toLocaleDateString("en-GB"), size: 16, color: TEXT_LIGHT }),
-      new TextRun({ text: "\t", size: 16 }),
-      new TextRun({ text: new Date().getFullYear().toString(), size: 16, color: TEXT_LIGHT }),
+      new TextRun({ text: (WM ? WM_TEXT + "  •  " : "") + (BRAND ? BRAND + "  •  " : ""), size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
+      new TextRun({ text: `${S.generated}: ${new Date().toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA")}`, size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
     ],
-    alignment: AlignmentType.LEFT,
-    tabStops: [{ type: "right", position: convertInchesToTwip(6.5) }],
-  });
-}
-
-function coverTitle(text: string): Paragraph {
-  return new Paragraph({
-    heading: HeadingLevel.TITLE,
-    alignment: AlignmentType.CENTER,
-    children: [new TextRun({ text, size: 56, bold: true, color: WHITE })],
+    bidirectional: RTL,
+    alignment: dir(),
+    tabStops: [{ type: RTL ? "left" : "right", position: convertInchesToTwip(6.5) }],
   });
 }
 
 function sectionHeading(text: string): Paragraph {
   return new Paragraph({
     heading: HeadingLevel.HEADING_1,
-    children: [new TextRun({ text, size: 28, bold: true, color: PRIMARY })],
+    bidirectional: RTL,
+    alignment: dir(),
+    children: [new TextRun({ text, size: 28, bold: true, color: PRIMARY, rightToLeft: RTL })],
     spacing: { before: 400, after: 120 },
     border: { bottom: { color: ACCENT, size: 8, style: BorderStyle.SINGLE, space: 4 } },
   });
@@ -92,66 +100,90 @@ function sectionHeading(text: string): Paragraph {
 function subHeading(text: string): Paragraph {
   return new Paragraph({
     heading: HeadingLevel.HEADING_2,
-    children: [new TextRun({ text, size: 22, bold: true, color: NAVY })],
+    bidirectional: RTL,
+    alignment: dir(),
+    children: [new TextRun({ text, size: 22, bold: true, color: NAVY, rightToLeft: RTL })],
     spacing: { before: 300, after: 80 },
   });
 }
 
 function bodyText(text: string): Paragraph {
   return new Paragraph({
-    children: [new TextRun({ text, size: 20, color: TEXT_MID })],
+    bidirectional: RTL,
+    alignment: dir(),
+    children: [run(text, { size: 20, color: TEXT_MID })],
     spacing: { after: 100 },
   });
 }
 
 function bulletItem(text: string): Paragraph {
   return new Paragraph({
-    children: [new TextRun({ text, size: 20, color: TEXT_MID })],
+    bidirectional: RTL,
+    alignment: dir(),
+    children: [run(text, { size: 20, color: TEXT_MID })],
     bullet: { level: 0 },
     spacing: { after: 60 },
   });
 }
 
-function infoRow(label: string, value: string): TableRow {
-  return new TableRow({
-    children: [
-      new TableCell({
-        children: [new Paragraph({ children: [new TextRun({ text: label, size: 18, bold: true, color: NAVY })] })],
-        shading: { fill: "EFF6FF", type: ShadingType.CLEAR, color: "auto" },
-        width: { size: 30, type: WidthType.PERCENTAGE },
-        verticalAlign: VerticalAlign.CENTER,
-        margins: { top: 80, bottom: 80, left: 120, right: 80 },
-      }),
-      new TableCell({
-        children: [new Paragraph({ children: [new TextRun({ text: value, size: 18, color: TEXT })] })],
-        width: { size: 70, type: WidthType.PERCENTAGE },
-        verticalAlign: VerticalAlign.CENTER,
-        margins: { top: 80, bottom: 80, left: 120, right: 80 },
-      }),
-    ],
+function centerTitle(text: string, size: number, color: string, spacing?: { before?: number; after?: number }): Paragraph {
+  return new Paragraph({
+    bidirectional: RTL,
+    alignment: AlignmentType.CENTER,
+    children: [new TextRun({ text, size, bold: true, color, rightToLeft: RTL })],
+    spacing,
   });
 }
 
+function cellPara(text: string, o: { size?: number; bold?: boolean; color?: string } = {}): Paragraph {
+  return new Paragraph({
+    bidirectional: RTL,
+    alignment: dir(),
+    children: [run(text || "—", o)],
+  });
+}
+
+function infoRow(label: string, value: string): TableRow {
+  const labelCell = new TableCell({
+    children: [cellPara(label, { size: 18, bold: true, color: NAVY })],
+    shading: { fill: "EFF6FF", type: ShadingType.CLEAR, color: "auto" },
+    width: { size: 30, type: WidthType.PERCENTAGE },
+    verticalAlign: VerticalAlign.CENTER,
+    margins: { top: 80, bottom: 80, left: 120, right: 80 },
+  });
+  const valueCell = new TableCell({
+    children: [cellPara(value, { size: 18, color: TEXT })],
+    width: { size: 70, type: WidthType.PERCENTAGE },
+    verticalAlign: VerticalAlign.CENTER,
+    margins: { top: 80, bottom: 80, left: 120, right: 80 },
+  });
+  // في RTL نضع خانة التسمية على اليمين
+  return new TableRow({ children: RTL ? [valueCell, labelCell] : [labelCell, valueCell] });
+}
+
 function makeTable(headers: string[], rows: string[][]): Table {
+  // في RTL نعكس ترتيب الأعمدة بصرياً لتُقرأ من اليمين لليسار
+  const H = RTL ? [...headers].reverse() : headers;
+  const R = RTL ? rows.map(r => [...r].reverse()) : rows;
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     layout: TableLayoutType.FIXED,
     rows: [
       new TableRow({
         tableHeader: true,
-        children: headers.map(h =>
+        children: H.map(h =>
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: h, size: 18, bold: true, color: WHITE })] })],
+            children: [cellPara(h, { size: 18, bold: true, color: WHITE })],
             shading: { fill: NAVY, type: ShadingType.CLEAR, color: "auto" },
             margins: { top: 80, bottom: 80, left: 100, right: 60 },
           })
         ),
       }),
-      ...rows.map((row, rowIdx) =>
+      ...R.map((row, rowIdx) =>
         new TableRow({
           children: row.map(cell =>
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: cell || "—", size: 17, color: TEXT })] })],
+              children: [cellPara(cell, { size: 17, color: TEXT })],
               shading: { fill: rowIdx % 2 === 0 ? "FFFFFF" : BG_LIGHT, type: ShadingType.CLEAR, color: "auto" },
               margins: { top: 70, bottom: 70, left: 100, right: 60 },
             })
@@ -162,302 +194,287 @@ function makeTable(headers: string[], rows: string[][]): Table {
   });
 }
 
-// ============================
-// 1. Project Charter DOCX
-// ============================
-export async function generateCharterDOCX(data: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
-  applyTheme(opts);
-  const children: (Paragraph | Table)[] = [
-    // Cover page section (simulated with styling)
-    new Paragraph({
-      children: [new TextRun({ text: BRAND || "خطة إدارة المشروع", size: 64, bold: true, color: PRIMARY })],
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 1440, after: 200 },
-    }),
-    new Paragraph({
-      children: [new TextRun({ text: "PROJECT CHARTER", size: 52, bold: true, color: NAVY })],
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 100 },
-    }),
-    new Paragraph({
-      children: [new TextRun({ text: projectName, size: 36, color: TEXT_MID })],
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 400 },
-    }),
-    new Paragraph({
-      children: [new TextRun({ text: "PMI/PMBOK Guide 7th Edition Compliant", size: 20, color: ACCENT, italics: true })],
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 800 },
-    }),
-    new Paragraph({ children: [new PageBreak()] }),
-
-    // Document info table
-    sectionHeading("1. Document Information"),
+function coverBlock(title: string, projectName: string, badge?: string): (Paragraph)[] {
+  const blocks = [
+    centerTitle(BRAND || "وضوح", 40, PRIMARY, { before: 1440, after: 200 }),
+    centerTitle(title, 48, NAVY, { after: 120 }),
+    new Paragraph({ bidirectional: RTL, alignment: AlignmentType.CENTER, children: [run(projectName, { size: 32, color: TEXT_MID })], spacing: { after: 300 } }),
   ];
+  if (badge) blocks.push(new Paragraph({ bidirectional: RTL, alignment: AlignmentType.CENTER, children: [new TextRun({ text: badge, size: 20, color: ACCENT, italics: true, rightToLeft: RTL })], spacing: { after: 800 } }));
+  blocks.push(new Paragraph({ children: [new PageBreak()] }));
+  return blocks;
+}
 
-  const infoTable = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    rows: [
-      infoRow("Project Name", (data.project_name as string) || projectName),
-      infoRow("Document Number", (data.project_number as string) || "WUD-001"),
-      infoRow("Version", (data.version as string) || "1.0"),
-      infoRow("Preparation Date", (data.preparation_date as string) || new Date().toISOString().split("T")[0]),
-      infoRow("Prepared By", (data.project_manager as string) || "Project Manager"),
-    ],
-  });
-  children.push(infoTable);
-
-  // Purpose
-  children.push(sectionHeading("2. Project Purpose"));
-  children.push(bodyText((data.purpose as string) || ""));
-
-  // Description
-  children.push(sectionHeading("3. Project Description"));
-  children.push(bodyText((data.description as string) || ""));
-
-  // Objectives
-  children.push(sectionHeading("4. Project Objectives"));
-  const objectives = (data.objectives as string[]) || [];
-  objectives.forEach(obj => children.push(bulletItem(obj)));
-
-  // Scope
-  children.push(sectionHeading("5. Project Scope"));
-  children.push(subHeading("5.1 Included in Scope"));
-  ((data.scope_included as string[]) || []).forEach(s => children.push(bulletItem(s)));
-  children.push(subHeading("5.2 Excluded from Scope"));
-  ((data.scope_excluded as string[]) || []).forEach(s => children.push(bulletItem(s)));
-
-  // Stakeholders
-  children.push(sectionHeading("6. Key Stakeholders"));
-  const stakeholders = (data.stakeholders as Array<{name:string;role:string;influence:string;interest:string}>) || [];
-  if (stakeholders.length > 0) {
-    children.push(makeTable(
-      ["Name/Org", "Role", "Influence", "Interest"],
-      stakeholders.map(s => [s.name, s.role, s.influence, s.interest])
-    ));
-  }
-
-  // Budget
-  children.push(sectionHeading("7. Budget Summary"));
-  const budget = (data.budget_summary as {total:number;currency:string;notes:string}) || {};
-  children.push(makeTable(
-    ["Total Budget", "Currency", "Notes"],
-    [[String(budget.total || 0), budget.currency || "SAR", budget.notes || ""]]
-  ));
-
-  // Assumptions
-  children.push(sectionHeading("8. Assumptions & Constraints"));
-  children.push(subHeading("8.1 Assumptions"));
-  ((data.assumptions as string[]) || []).forEach(a => children.push(bulletItem(a)));
-  children.push(subHeading("8.2 Constraints"));
-  ((data.constraints as string[]) || []).forEach(c => children.push(bulletItem(c)));
-
-  // Risks
-  children.push(sectionHeading("9. High-Level Risks"));
-  ((data.risks_summary as string[]) || []).forEach(r => children.push(bulletItem(r)));
-
-  // Success Criteria
-  children.push(sectionHeading("10. Success Criteria"));
-  ((data.success_criteria as string[]) || []).forEach(c => children.push(bulletItem(c)));
-
-  // Authorization
-  children.push(sectionHeading("11. Authorization"));
-  const authTable = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    rows: [
-      new TableRow({
-        children: [
-          new TableCell({
-            children: [
-              new Paragraph({ children: [new TextRun({ text: "Project Sponsor", size: 18, bold: true, color: NAVY })] }),
-              new Paragraph({ children: [new TextRun({ text: "Name: ________________________", size: 18, color: TEXT_MID })] }),
-              new Paragraph({ children: [new TextRun({ text: "Signature: ____________________", size: 18, color: TEXT_MID })] }),
-              new Paragraph({ children: [new TextRun({ text: "Date: _________________________", size: 18, color: TEXT_MID })] }),
-            ],
-            margins: { top: 160, bottom: 160, left: 200, right: 200 },
-          }),
-          new TableCell({
-            children: [
-              new Paragraph({ children: [new TextRun({ text: "Project Manager", size: 18, bold: true, color: NAVY })] }),
-              new Paragraph({ children: [new TextRun({ text: "Name: ________________________", size: 18, color: TEXT_MID })] }),
-              new Paragraph({ children: [new TextRun({ text: "Signature: ____________________", size: 18, color: TEXT_MID })] }),
-              new Paragraph({ children: [new TextRun({ text: "Date: _________________________", size: 18, color: TEXT_MID })] }),
-            ],
-            margins: { top: 160, bottom: 160, left: 200, right: 200 },
-          }),
-        ],
-      }),
-    ],
-  });
-  children.push(authTable);
-
+function buildDoc(title: string, children: (Paragraph | Table)[]): Promise<Uint8Array> {
   const doc = new Document({
     styles: {
       default: {
         document: {
           run: { font: "Calibri", size: 20, color: TEXT },
-          paragraph: { spacing: { line: 276 } },
+          paragraph: { spacing: { line: 288 } },
         },
       },
     },
     sections: [{
-      headers: { default: new Header({ children: [headerParagraph("Project Charter")] }) },
+      headers: { default: new Header({ children: [headerParagraph(title)] }) },
       footers: { default: new Footer({ children: [footerParagraph()] }) },
       children,
     }],
   });
-
   return Packer.toBuffer(doc) as unknown as Promise<Uint8Array>;
 }
 
 // ============================
-// 2. Project Management Plan DOCX
+// مولّد Word عام مرن — يعرض أي مستند من مخطّط موحّد
+// ============================
+type GenericSection = {
+  heading?: string;
+  kind?: "text" | "list" | "table" | "keyvalue";
+  text?: string;
+  items?: string[];
+  headers?: string[];
+  rows?: string[][];
+  pairs?: [string, string][];
+};
+
+export async function generateGenericDOCX(
+  data: Record<string, unknown>,
+  projectName: string,
+  docTitleText: string,
+  opts?: GenOptions
+): Promise<Uint8Array> {
+  applyTheme(opts);
+  const title = (data.title as string) || docTitleText;
+  const children: (Paragraph | Table)[] = [...coverBlock(title, projectName, S.compliant)];
+
+  if (data.subtitle) children.push(bodyText(data.subtitle as string));
+
+  const sections = (data.sections as GenericSection[]) || [];
+  let n = 0;
+  for (const sec of sections) {
+    n++;
+    if (sec.heading) children.push(sectionHeading(`${n}. ${sec.heading}`));
+    const kind = sec.kind
+      ?? (sec.rows ? "table" : sec.pairs ? "keyvalue" : sec.items ? "list" : "text");
+    if (kind === "text" && sec.text) {
+      children.push(bodyText(sec.text));
+    } else if (kind === "list" && sec.items?.length) {
+      sec.items.forEach(it => children.push(bulletItem(it)));
+    } else if (kind === "table" && sec.rows?.length) {
+      children.push(makeTable(sec.headers || [], sec.rows.map(r => r.map(c => String(c ?? "")))));
+    } else if (kind === "keyvalue" && sec.pairs?.length) {
+      children.push(new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: sec.pairs.map(([k, v]) => infoRow(k, String(v ?? ""))),
+      }));
+    } else if (sec.text) {
+      children.push(bodyText(sec.text));
+    }
+  }
+
+  // احتياطي: لو المخطّط فارغ، لا نُخرج مستنداً فاضياً
+  if (sections.length === 0) {
+    children.push(sectionHeading(S.overview));
+    children.push(bodyText((data.project_overview as string) || (data.description as string) || projectName));
+  }
+
+  return buildDoc(title, children);
+}
+
+// ============================
+// 1. ميثاق المشروع
+// ============================
+export async function generateCharterDOCX(data: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
+  applyTheme(opts);
+  const title = S.projectName === "Project Name" ? "Project Charter" : "ميثاق المشروع";
+  const children: (Paragraph | Table)[] = [...coverBlock(title, projectName, S.compliant)];
+
+  children.push(sectionHeading(`1. ${S.docInfo}`));
+  children.push(new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      infoRow(S.projectName, (data.project_name as string) || projectName),
+      infoRow(S.docNumber, (data.project_number as string) || "WUD-001"),
+      infoRow(S.version, (data.version as string) || "1.0"),
+      infoRow(S.prepDate, (data.preparation_date as string) || new Date().toISOString().split("T")[0]),
+      infoRow(S.preparedBy, (data.prepared_by as string) || S.aiAuthor),
+    ],
+  }));
+
+  children.push(sectionHeading(`2. ${S.purpose}`));
+  children.push(bodyText((data.purpose as string) || ""));
+
+  children.push(sectionHeading(`3. ${S.description}`));
+  children.push(bodyText((data.description as string) || ""));
+
+  children.push(sectionHeading(`4. ${S.objectives}`));
+  ((data.objectives as string[]) || []).forEach(obj => children.push(bulletItem(obj)));
+
+  children.push(sectionHeading(`5. ${S.scope}`));
+  children.push(subHeading(`5.1 ${S.inScope}`));
+  ((data.scope_included as string[]) || []).forEach(s => children.push(bulletItem(s)));
+  children.push(subHeading(`5.2 ${S.outScope}`));
+  ((data.scope_excluded as string[]) || []).forEach(s => children.push(bulletItem(s)));
+
+  children.push(sectionHeading(`6. ${S.stakeholders}`));
+  const stakeholders = (data.stakeholders as Array<{name:string;role:string;influence:string;interest:string}>) || [];
+  if (stakeholders.length > 0) {
+    children.push(makeTable(
+      [S.name, S.role, S.influence, S.interest],
+      stakeholders.map(s => [s.name, s.role, s.influence, s.interest])
+    ));
+  }
+
+  children.push(sectionHeading(`7. ${S.budgetSummary}`));
+  const budget = (data.budget_summary as {total:number;currency:string;notes:string}) || {};
+  children.push(makeTable(
+    [S.totalBudget, S.currency, S.notes],
+    [[String(budget.total || 0), budget.currency || "SAR", budget.notes || ""]]
+  ));
+
+  children.push(sectionHeading(`8. ${S.assumptionsConstraints}`));
+  children.push(subHeading(`8.1 ${S.assumptions}`));
+  ((data.assumptions as string[]) || []).forEach(a => children.push(bulletItem(a)));
+  children.push(subHeading(`8.2 ${S.constraints}`));
+  ((data.constraints as string[]) || []).forEach(c => children.push(bulletItem(c)));
+
+  children.push(sectionHeading(`9. ${S.highLevelRisks}`));
+  ((data.risks_summary as string[]) || []).forEach(r => children.push(bulletItem(r)));
+
+  children.push(sectionHeading(`10. ${S.successCriteria}`));
+  ((data.success_criteria as string[]) || []).forEach(c => children.push(bulletItem(c)));
+
+  children.push(sectionHeading(`11. ${S.authorization}`));
+  const sigCell = (roleLabel: string) => new TableCell({
+    children: [
+      cellPara(roleLabel, { size: 18, bold: true, color: NAVY }),
+      cellPara(`${S.name}: ________________________`, { size: 18, color: TEXT_MID }),
+      cellPara(`${S.signature}: ____________________`, { size: 18, color: TEXT_MID }),
+      cellPara(`${S.date}: _________________________`, { size: 18, color: TEXT_MID }),
+    ],
+    margins: { top: 160, bottom: 160, left: 200, right: 200 },
+  });
+  const cells = [sigCell(S.sponsor), sigCell(S.projectManager)];
+  children.push(new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [new TableRow({ children: RTL ? cells.reverse() : cells })],
+  }));
+
+  return buildDoc(title, children);
+}
+
+// ============================
+// 2. خطة إدارة المشروع
 // ============================
 export async function generateProjectPlanDOCX(agendaData: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
   applyTheme(opts);
-  const children: (Paragraph | Table)[] = [
-    // Cover
-    new Paragraph({
-      children: [new TextRun({ text: "PROJECT MANAGEMENT PLAN", size: 52, bold: true, color: NAVY })],
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 1440, after: 200 },
-    }),
-    new Paragraph({
-      children: [new TextRun({ text: projectName, size: 36, color: TEXT_MID })],
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 400 },
-    }),
-    new Paragraph({ children: [new PageBreak()] }),
+  const title = LANG === "en" ? "Project Management Plan" : "خطة إدارة المشروع";
+  const children: (Paragraph | Table)[] = [...coverBlock(title, projectName, S.compliant)];
 
-    sectionHeading("1. Project Overview"),
-    bodyText((agendaData.project_overview as string) || ""),
+  children.push(sectionHeading(`1. ${S.overview}`));
+  children.push(bodyText((agendaData.project_overview as string) || ""));
 
-    sectionHeading("2. Methodology"),
-    makeTable(
-      ["Methodology", "Estimated Effort", "Duration", "Team Size"],
-      [[
-        String(agendaData.methodology || "Predictive"),
-        `${agendaData.estimated_effort_hours || 0} hrs`,
-        `${agendaData.duration_weeks || 0} weeks`,
-        `${agendaData.team_size_recommended || 0} members`,
-      ]]
-    ),
+  const effort = agendaData.estimated_effort_hours || 0;
+  const dur = agendaData.duration_weeks || agendaData.duration || 0;
+  const team = agendaData.team_size_recommended || agendaData.team_size || 0;
+  children.push(sectionHeading(`2. ${S.methodology}`));
+  children.push(makeTable(
+    [S.methodology, S.estEffort, S.duration, S.teamSize],
+    [[
+      String(agendaData.methodology || "—"),
+      `${effort} ${S.hours}`,
+      `${dur} ${S.weeks}`,
+      `${team} ${S.members}`,
+    ]]
+  ));
 
-    sectionHeading("3. Project Phases"),
-  ];
-
+  children.push(sectionHeading(`3. ${S.phases}`));
   const phases = (agendaData.phases as Array<{name:string;start_week:number;end_week:number;description:string;deliverables:string[]}>) || [];
   if (phases.length > 0) {
     children.push(makeTable(
-      ["Phase", "Start Week", "End Week", "Description", "Key Deliverables"],
-      phases.map(p => [p.name, `Wk ${p.start_week}`, `Wk ${p.end_week}`, p.description, (p.deliverables || []).join(", ")])
+      [S.phase, S.startWeek, S.endWeek, S.description, S.keyDeliverables],
+      phases.map(p => [p.name, `${S.week} ${p.start_week}`, `${S.week} ${p.end_week}`, p.description, (p.deliverables || []).join("، ")])
     ));
   }
 
-  children.push(sectionHeading("4. Key Milestones"));
+  children.push(sectionHeading(`4. ${S.milestones}`));
   const milestones = (agendaData.key_milestones as Array<{name:string;week:number;description:string;success_criteria:string}>) || [];
   if (milestones.length > 0) {
     children.push(makeTable(
-      ["Milestone", "Week", "Description", "Success Criteria"],
-      milestones.map(m => [m.name, `Wk ${m.week}`, m.description, m.success_criteria])
+      [S.milestone, S.week, S.description, S.successCriteria],
+      milestones.map(m => [m.name, `${S.week} ${m.week}`, m.description, m.success_criteria])
     ));
   }
 
-  children.push(sectionHeading("5. Key Performance Indicators"));
+  children.push(sectionHeading(`5. ${S.kpis}`));
   const kpis = (agendaData.kpis as Array<{name:string;target:string;measurement_method:string;frequency:string}>) || [];
   if (kpis.length > 0) {
     children.push(makeTable(
-      ["KPI", "Target", "Measurement Method", "Frequency"],
+      [S.kpi, S.target, S.measurement, S.frequency],
       kpis.map(k => [k.name, k.target, k.measurement_method, k.frequency])
     ));
   }
 
-  children.push(sectionHeading("6. Critical Success Factors"));
+  children.push(sectionHeading(`6. ${S.criticalFactors}`));
   ((agendaData.critical_success_factors as string[]) || []).forEach(f => children.push(bulletItem(f)));
 
-  children.push(sectionHeading("7. Recommendations"));
+  children.push(sectionHeading(`7. ${S.recommendations}`));
   ((agendaData.recommendations as string[]) || []).forEach(r => children.push(bulletItem(r)));
 
-  const doc = new Document({
-    sections: [{
-      headers: { default: new Header({ children: [headerParagraph("Project Management Plan")] }) },
-      footers: { default: new Footer({ children: [footerParagraph()] }) },
-      children,
-    }],
-  });
-
-  return Packer.toBuffer(doc) as unknown as Promise<Uint8Array>;
+  return buildDoc(title, children);
 }
 
 // ============================
-// 3. Risk Register DOCX
+// 3. سجل المخاطر
 // ============================
 export async function generateRiskRegisterDOCX(data: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
   applyTheme(opts);
-  const children: (Paragraph | Table)[] = [
-    new Paragraph({
-      children: [new TextRun({ text: "RISK REGISTER", size: 52, bold: true, color: NAVY })],
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 1440, after: 200 },
-    }),
-    new Paragraph({
-      children: [new TextRun({ text: projectName, size: 36, color: TEXT_MID })],
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 800 },
-    }),
-    new Paragraph({ children: [new PageBreak()] }),
+  const title = S.riskRegister;
+  const children: (Paragraph | Table)[] = [...coverBlock(title, projectName, S.compliant)];
 
-    sectionHeading("1. Risk Summary"),
-  ];
-
-  const summary = (data.summary as {total_risks:number;critical:number;high:number;medium:number;low:number;overall_risk_level:string}) || {};
-  children.push(makeTable(
-    ["Total Risks", "Critical", "High", "Medium", "Low", "Overall Level"],
-    [[
-      String(summary.total_risks || 0),
-      String(summary.critical || 0),
-      String(summary.high || 0),
-      String(summary.medium || 0),
-      String(summary.low || 0),
-      summary.overall_risk_level || "Medium",
-    ]]
-  ));
-
-  children.push(sectionHeading("2. Risk Register"));
   const risks = (data.risks as Array<{
     id:string; risk_statement:string; category:string;
     probability_score:number; impact_score:number; risk_score:number;
     risk_level:string; response_strategy:string; contingency_plan:string; owner:string; status:string;
   }>) || [];
 
+  // ملخّص محسوب من المخاطر (يتجنّب ظهور أصفار عندما لا يرسل الذكاء ملخّصاً)
+  const sm = (data.summary as {total_risks:number;critical:number;high:number;medium:number;low:number;overall_risk_level:string}) || {} as Record<string, number>;
+  const lvl = (r: {risk_level?: string}) => (r.risk_level || "").toLowerCase();
+  const count = (k: string) => risks.filter(r => lvl(r).includes(k)).length;
+  const total = sm.total_risks || risks.length;
+  const crit = sm.critical ?? count("crit");
+  const hi = sm.high ?? count("high");
+  const med = sm.medium ?? count("med");
+  const lo = sm.low ?? count("low");
+
+  children.push(sectionHeading(`1. ${S.riskSummary}`));
+  children.push(makeTable(
+    [S.totalRisks, S.critical, S.high, S.medium, S.low],
+    [[String(total), String(crit), String(hi), String(med), String(lo)]]
+  ));
+
+  children.push(sectionHeading(`2. ${S.riskRegister}`));
   if (risks.length > 0) {
     children.push(makeTable(
-      ["ID", "Risk Statement", "Category", "P", "I", "Score", "Level", "Strategy", "Owner"],
+      [S.id, S.riskStatement, S.category, S.probability, S.impact, S.score, S.level, S.strategy, S.owner],
       risks.map(r => [r.id, r.risk_statement, r.category, String(r.probability_score), String(r.impact_score), String(r.risk_score), r.risk_level, r.response_strategy, r.owner])
     ));
   }
 
-  children.push(sectionHeading("3. Risk Response Details"));
+  children.push(sectionHeading(`3. ${S.responseDetails}`));
   risks.forEach(r => {
-    children.push(subHeading(`${r.id}: ${r.risk_statement.substring(0, 60)}`));
-    children.push(makeTable(
-      ["Field", "Details"],
-      [
-        ["Response Strategy", r.response_strategy],
-        ["Contingency Plan", r.contingency_plan],
-        ["Owner", r.owner],
-        ["Status", r.status],
-      ]
-    ));
+    children.push(subHeading(`${r.id}: ${(r.risk_statement || "").substring(0, 60)}`));
+    children.push(new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        infoRow(S.strategy, r.response_strategy),
+        infoRow(S.contingency, r.contingency_plan),
+        infoRow(S.owner, r.owner),
+        infoRow(S.status, r.status),
+      ],
+    }));
   });
 
-  const doc = new Document({
-    sections: [{
-      headers: { default: new Header({ children: [headerParagraph("Risk Register")] }) },
-      footers: { default: new Footer({ children: [footerParagraph()] }) },
-      children,
-    }],
-  });
-
-  return Packer.toBuffer(doc) as unknown as Promise<Uint8Array>;
+  return buildDoc(title, children);
 }
