@@ -27,6 +27,12 @@ export default function LoginCatchAllPage() {
             },
           }}
         />
+
+        <p className="text-center mt-5">
+          <a href="/demo" className="text-sm font-arabic text-slate-500 hover:text-brand-blue underline">
+            جرّب النظام أولاً — وضع تجريبي بدون تسجيل
+          </a>
+        </p>
       </div>
     </div>
   );
