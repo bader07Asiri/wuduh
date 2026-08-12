@@ -93,7 +93,7 @@ const FORMAT_COLORS: Record<DeliverableFormat, string> = {
 };
 
 type Selection = { type: DeliverableType; format: DeliverableFormat };
-type GeneratedFile = { id?: string; type: DeliverableType; format: DeliverableFormat; url: string; status: "ready" | "generating" | "error" };
+type GeneratedFile = { id?: string; type: DeliverableType; format: DeliverableFormat; url: string; status: "ready" | "generating" | "error"; error?: string };
 
 export default function DeliverablesPage() {
   const { id } = useParams<{ id: string }>();
@@ -215,6 +215,7 @@ export default function DeliverablesPage() {
         format: f.format as DeliverableFormat,
         url: f.url || "",
         status: (f.status === "ready" ? "ready" : f.status === "error" ? "error" : "generating") as "ready" | "generating" | "error",
+        error: f.error,
       }));
       setGenerated(prev => {
         const key = (f: GeneratedFile) => `${f.type}:${f.format}`;
@@ -410,13 +411,20 @@ export default function DeliverablesPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {generated.map((file, i) => (
-              <div key={i} className="flex items-center justify-between bg-white rounded-xl p-3 border border-slate-100">
-                <div className="flex items-center gap-2">
-                  {file.status === "generating" && <Loader2 size={14} className="animate-spin text-slate-400" />}
-                  {file.status === "ready" && <CheckSquare size={14} className="text-emerald-500" />}
-                  {file.status === "error" && <span className="text-red-500 text-xs">✗</span>}
-                  <span className="text-sm font-arabic text-slate-700 truncate max-w-[180px]">
-                    {DELIVERABLE_LABELS[file.type]}
+              <div key={i} className={cn("bg-white rounded-xl p-3 border", file.status === "error" ? "border-red-200 flex-col" : "border-slate-100", "flex items-start justify-between gap-2")}>
+                <div className="flex items-start gap-2 min-w-0">
+                  {file.status === "generating" && <Loader2 size={14} className="animate-spin text-slate-400 mt-0.5" />}
+                  {file.status === "ready" && <CheckSquare size={14} className="text-emerald-500 mt-0.5" />}
+                  {file.status === "error" && <span className="text-red-500 text-xs mt-0.5">✗</span>}
+                  <span className="min-w-0">
+                    <span className="block text-sm font-arabic text-slate-700 truncate max-w-[180px]">
+                      {DELIVERABLE_LABELS[file.type]}
+                    </span>
+                    {file.status === "error" && file.error && (
+                      <span className="block text-[11px] font-arabic text-red-500 mt-0.5 leading-snug max-w-[220px]">
+                        {file.error}
+                      </span>
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">

@@ -266,21 +266,33 @@ export async function POST(req: NextRequest) {
         let aiData: Record<string, unknown> = {};
         const builder = pickBuilder(type, format);
         if (builder) {
+          const built = builder();
           try {
-            const built = builder();
             aiData = (await generateWithClaude({
               system: built.system,
               user: built.user + langDirective,
-              maxTokens: 6000,
+              maxTokens: 8000,
               model: "claude-haiku-4-5-20251001",
               onUsage: (u) => logAiUsage(supabase, { userId, projectId, promptType: type, model: u.model }, u),
             })) as Record<string, unknown>;
-          } catch {
-            // Fall back to agenda data if AI call fails
-            aiData = agendaData;
+          } catch (aiErr) {
+            // لا نُخرج مستنداً فاضياً بصمت — نُظهر السبب الحقيقي للمستخدم
+            throw new Error(
+              `تعذّر توليد محتوى «${type}» عبر الذكاء: ${aiErr instanceof Error ? aiErr.message : "خطأ غير معروف"}`
+            );
           }
         } else {
           aiData = agendaData;
+        }
+
+        // حارس: مستندات تُبنى من الأجندة لكن الأجندة غير مولّدة → نُظهر سبباً واضحاً بدل ملف فاضٍ
+        const agendaEmpty =
+          !(effectiveAgenda.phases as unknown[] | undefined)?.length &&
+          !effectiveAgenda.project_overview;
+        if (!builder && agendaEmpty) {
+          throw new Error(
+            "الأجندة (الخطة) غير مكتملة لهذا المشروع — ارجع لخطوة الخطة، ولّدها واعتمدها، ثم أعد توليد المستندات."
+          );
         }
 
         // Generate the actual file
@@ -331,7 +343,15 @@ export async function POST(req: NextRequest) {
           .update({ status: "error" })
           .eq("id", deliverable.id);
 
-        throw err;
+        // نُرجع الخطأ مع نوع المستند (بدل رفضه) عشان تظهر الرسالة الصحيحة في الواجهة
+        return {
+          id: deliverable.id,
+          type,
+          format,
+          url: "",
+          status: "error" as const,
+          error: err instanceof Error ? err.message : "خطأ غير معروف",
+        };
       }
     })
   );
