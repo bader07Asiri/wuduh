@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { FileDown, CheckSquare, Square, Loader2, ExternalLink, AlertTriangle } from "lucide-react";
 import { DELIVERABLE_LABELS, type DeliverableType, type DeliverableFormat } from "@/types";
-import { DOC_THEMES, DEFAULT_THEME_ID } from "@/lib/themes";
-import { Palette, Check, Building2, PenLine } from "lucide-react";
+import { Palette, Building2, PenLine, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const WUDUH_COLORS = { dark: "#0F2057", primary: "#2563EB", accent: "#0EA5E9", light: "#F8FAFC" };
 
 interface DeliverableOption {
   type: DeliverableType;
@@ -101,18 +102,11 @@ export default function DeliverablesPage() {
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState<GeneratedFile[]>([]);
   const [downloadingAll, setDownloadingAll] = useState(false);
-  const [themeId, setThemeId] = useState<string>(DEFAULT_THEME_ID);
-  const [themeSearch, setThemeSearch] = useState("");
-  const [showThemes, setShowThemes] = useState(false);
   const [useOrgIdentity, setUseOrgIdentity] = useState(false);
   const [includeSignature, setIncludeSignature] = useState(false);
   const [outputLang, setOutputLang] = useState<"ar" | "en">("ar");
-  const [useCustom, setUseCustom] = useState(false);
-  const [customColors, setCustomColors] = useState({ dark: "#0F2057", primary: "#2563EB", accent: "#0EA5E9", light: "#F8FAFC" });
-  const activeTheme = DOC_THEMES.find(t => t.id === themeId) ?? DOC_THEMES[0];
-  const filteredThemes = themeSearch
-    ? DOC_THEMES.filter(t => (t.name + " " + t.nameEn).toLowerCase().includes(themeSearch.toLowerCase()))
-    : DOC_THEMES;
+  const [customColors, setCustomColors] = useState({ ...WUDUH_COLORS });
+  const isDefaultColors = (["dark", "primary", "accent", "light"] as const).every(k => customColors[k].toLowerCase() === WUDUH_COLORS[k].toLowerCase());
 
   // Pre-select recommended
   useEffect(() => {
@@ -203,7 +197,7 @@ export default function DeliverablesPage() {
       const res = await fetch("/api/deliverables/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: id, deliverables: toGenerate, themeId, customColors: useCustom ? customColors : undefined, useOrgIdentity, includeSignature, outputLang }),
+        body: JSON.stringify({ projectId: id, deliverables: toGenerate, customColors, useOrgIdentity, includeSignature, outputLang }),
       });
 
       if (!res.ok) throw new Error();
@@ -252,94 +246,41 @@ export default function DeliverablesPage() {
         </Button>
       </div>
 
-      {/* Theme + identity picker */}
+      {/* Document colors + identity */}
       <Card className="mb-6">
-        <button
-          type="button"
-          onClick={() => setShowThemes(v => !v)}
-          className="w-full flex items-center justify-between"
-        >
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Palette size={18} className="text-brand-blue" />
-            <span className="font-bold text-slate-900 font-arabic">ثيم المستندات</span>
-            <span className="text-xs text-slate-400 font-arabic">— اختر من {DOC_THEMES.length} ثيم</span>
+            <span className="font-bold text-slate-900 font-arabic">ألوان وهوية المستند</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1">
-              <span className="w-4 h-4 rounded-full" style={{ background: activeTheme.dark }} />
-              <span className="w-4 h-4 rounded-full" style={{ background: activeTheme.primary }} />
-              <span className="w-4 h-4 rounded-full" style={{ background: activeTheme.accent }} />
-            </span>
-            <span className="text-sm font-arabic text-slate-600">{activeTheme.name}</span>
-          </div>
-        </button>
-
-        {showThemes && (
-          <div className="mt-4">
-            {/* ألوان مخصّصة — تُطبّق بدل الثيم الجاهز */}
-            <div className="mb-3 rounded-xl border border-slate-200 p-3">
-              <label className="flex items-center gap-2 cursor-pointer mb-2">
-                <input type="checkbox" checked={useCustom} onChange={e => setUseCustom(e.target.checked)} className="w-4 h-4 accent-brand-blue" />
-                <span className="text-sm font-bold font-arabic text-slate-700">استخدام ألوان علامتي الخاصة</span>
-              </label>
-              {useCustom && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
-                  {([
-                    ["dark", "الداكن (الترويسة)"],
-                    ["primary", "الأساسي"],
-                    ["accent", "المميّز"],
-                    ["light", "الفاتح (الخلفية)"],
-                  ] as const).map(([key, label]) => (
-                    <label key={key} className="flex flex-col gap-1">
-                      <span className="text-[11px] font-arabic text-slate-500">{label}</span>
-                      <span className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-2 py-1">
-                        <input
-                          type="color"
-                          value={customColors[key]}
-                          onChange={e => setCustomColors(c => ({ ...c, [key]: e.target.value }))}
-                          className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0"
-                        />
-                        <span className="text-[10px] font-latin text-slate-400 uppercase">{customColors[key]}</span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-            <input
-              type="text"
-              value={themeSearch}
-              onChange={e => setThemeSearch(e.target.value)}
-              placeholder="ابحث عن ثيم بالاسم..."
-              disabled={useCustom}
-              className={cn("w-full mb-3 rounded-xl border border-slate-200 px-4 py-2 text-sm font-arabic focus:outline-none focus:ring-2 focus:ring-brand-blue/30", useCustom && "opacity-40 pointer-events-none")}
-            />
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-72 overflow-y-auto pr-1">
-              {filteredThemes.map(t => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setThemeId(t.id)}
-                  className={cn(
-                    "flex items-center gap-2 rounded-xl border p-2 text-right transition-all",
-                    t.id === themeId ? "border-brand-blue ring-1 ring-brand-blue bg-brand-blue/5" : "border-slate-200 hover:border-slate-300"
-                  )}
-                >
-                  <span className="flex flex-col gap-0.5 flex-shrink-0">
-                    <span className="w-6 h-2 rounded-full" style={{ background: t.dark }} />
-                    <span className="w-6 h-2 rounded-full" style={{ background: t.primary }} />
-                    <span className="w-6 h-2 rounded-full" style={{ background: t.accent }} />
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-xs font-bold font-arabic text-slate-700 truncate">{t.name}</span>
-                    <span className="block text-[10px] font-latin text-slate-400 truncate">{t.nameEn}</span>
-                  </span>
-                  {t.id === themeId && <Check size={14} className="text-brand-blue flex-shrink-0" />}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+          {!isDefaultColors && (
+            <button type="button" onClick={() => setCustomColors({ ...WUDUH_COLORS })}
+              className="inline-flex items-center gap-1 text-xs font-arabic text-slate-500 hover:text-brand-blue">
+              <RotateCcw size={13} /> ألوان وضوح الافتراضية
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-slate-400 font-arabic mb-3 leading-relaxed">
+          اختر ألوان علامتك يدوياً — تُطبَّق على ترويسة المستندات والعناوين والجداول. أو فعّل «هوية مؤسستي» بالأسفل لاستخدام الهوية المحفوظة.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {([
+            ["dark", "الداكن (الترويسة)"],
+            ["primary", "الأساسي"],
+            ["accent", "المميّز"],
+            ["light", "الفاتح (الخلفية)"],
+          ] as const).map(([key, label]) => (
+            <label key={key} className="flex flex-col gap-1">
+              <span className="text-[11px] font-arabic text-slate-500">{label}</span>
+              <span className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-2 py-1.5">
+                <input type="color" value={customColors[key]}
+                  onChange={e => setCustomColors(c => ({ ...c, [key]: e.target.value }))}
+                  className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0" />
+                <span className="text-[10px] font-latin text-slate-400 uppercase">{customColors[key]}</span>
+              </span>
+            </label>
+          ))}
+        </div>
 
         {/* Org identity toggles (تسري للباقات الاحترافية والأعلى — الخادم يطبّق حسب باقتك) */}
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">

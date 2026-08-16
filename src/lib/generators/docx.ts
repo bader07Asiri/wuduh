@@ -5,7 +5,7 @@
 import {
   Document, Packer, Paragraph, Table, TableRow, TableCell,
   TextRun, HeadingLevel, AlignmentType, WidthType, BorderStyle,
-  ShadingType, Header, Footer,
+  ShadingType, Header, Footer, PageNumber,
   TableLayoutType, VerticalAlign, PageBreak,
   convertInchesToTwip,
 } from "docx";
@@ -77,14 +77,21 @@ function headerParagraph(text: string): Paragraph {
 function footerParagraph(): Paragraph {
   return new Paragraph({
     children: [
-      new TextRun({ text: (WM ? WM_TEXT + "  •  " : "") + (BRAND ? BRAND + "  •  " : ""), size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
-      new TextRun({ text: `${S.generated}: ${new Date().toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA")}`, size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
+      new TextRun({ text: (WM ? WM_TEXT + "  •  " : "") + (BRAND ? BRAND + "  •  " : "") + S.standard, size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
+      new TextRun({ text: `\t${S.page} `, size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
+      new TextRun({ children: [PageNumber.CURRENT], size: 16, color: TEXT_LIGHT }),
     ],
     bidirectional: RTL,
     alignment: dir(),
     tabStops: [{ type: RTL ? "left" : "right", position: convertInchesToTwip(6.5) }],
   });
 }
+
+const NO_BORDER = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" } as const;
+const NO_BORDERS = {
+  top: NO_BORDER, bottom: NO_BORDER, left: NO_BORDER, right: NO_BORDER,
+  insideHorizontal: NO_BORDER, insideVertical: NO_BORDER,
+};
 
 function sectionHeading(text: string): Paragraph {
   return new Paragraph({
@@ -194,15 +201,63 @@ function makeTable(headers: string[], rows: string[][]): Table {
   });
 }
 
-function coverBlock(title: string, projectName: string, badge?: string): (Paragraph)[] {
-  const blocks = [
-    centerTitle(BRAND || "وضوح", 40, PRIMARY, { before: 1440, after: 200 }),
-    centerTitle(title, 48, NAVY, { after: 120 }),
-    new Paragraph({ bidirectional: RTL, alignment: AlignmentType.CENTER, children: [run(projectName, { size: 32, color: TEXT_MID })], spacing: { after: 300 } }),
+function coverWhite(text: string, size: number, color: string, bold = true): Paragraph {
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    bidirectional: RTL,
+    spacing: { after: 140 },
+    children: [new TextRun({ text, size, bold, color, rightToLeft: RTL })],
+  });
+}
+
+// غلاف بهوية لونية: شريط علوي بلون العلامة + عنوان أبيض + اسم المشروع، ثم فاصل مميّز وسطر بيانات
+function coverBlock(title: string, projectName: string, badge?: string): (Paragraph | Table)[] {
+  const band = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    layout: TableLayoutType.FIXED,
+    borders: NO_BORDERS,
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            shading: { fill: NAVY, type: ShadingType.CLEAR, color: "auto" },
+            margins: { top: 560, bottom: 560, left: 360, right: 360 },
+            verticalAlign: VerticalAlign.CENTER,
+            children: [
+              coverWhite(BRAND || "وضوح", 30, ACCENT),
+              coverWhite(title, 46, WHITE),
+              coverWhite(projectName, 26, "E2E8F0", false),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+
+  const rule = new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 220, after: 120 },
+    border: { bottom: { color: ACCENT, size: 14, style: BorderStyle.SINGLE, space: 1 } },
+    children: [new TextRun({ text: "", size: 2 })],
+  });
+
+  const meta = new Paragraph({
+    alignment: AlignmentType.CENTER,
+    bidirectional: RTL,
+    spacing: { after: 80 },
+    children: [new TextRun({
+      text: (badge ? badge + "  •  " : "") + `${S.generated}: ${new Date().toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA")}`,
+      size: 18, color: TEXT_LIGHT, italics: true, rightToLeft: RTL,
+    })],
+  });
+
+  return [
+    new Paragraph({ spacing: { before: 900 }, children: [new TextRun({ text: "", size: 2 })] }),
+    band,
+    rule,
+    meta,
+    new Paragraph({ children: [new PageBreak()] }),
   ];
-  if (badge) blocks.push(new Paragraph({ bidirectional: RTL, alignment: AlignmentType.CENTER, children: [new TextRun({ text: badge, size: 20, color: ACCENT, italics: true, rightToLeft: RTL })], spacing: { after: 800 } }));
-  blocks.push(new Paragraph({ children: [new PageBreak()] }));
-  return blocks;
 }
 
 function buildDoc(title: string, children: (Paragraph | Table)[]): Promise<Uint8Array> {
