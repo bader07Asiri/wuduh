@@ -11,7 +11,7 @@ import {
 } from "docx";
 import { getTheme } from "@/lib/themes";
 import type { GenOptions, DocLang } from "./types";
-import { L, isRTL, type DocStrings } from "./labels";
+import { L, isRTL, docDate, type DocStrings } from "./labels";
 
 // Brand colors as hex
 let NAVY    = "0F2057";
@@ -246,7 +246,7 @@ function coverBlock(title: string, projectName: string, badge?: string): (Paragr
     bidirectional: RTL,
     spacing: { after: 80 },
     children: [new TextRun({
-      text: (badge ? badge + "  •  " : "") + `${S.generated}: ${new Date().toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA")}`,
+      text: (badge ? badge + "  •  " : "") + `${S.generated}: ${docDate(LANG)}`,
       size: 18, color: TEXT_LIGHT, italics: true, rightToLeft: RTL,
     })],
   });

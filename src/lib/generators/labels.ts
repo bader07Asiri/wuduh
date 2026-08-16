@@ -278,6 +278,17 @@ export function isRTL(lang?: DocLang): boolean {
   return lang !== "en";
 }
 
+// تاريخ الإنشاء — ميلادي دائماً (نتفادى التقويم الهجري) بأرقام مناسبة للغة
+export function docDate(lang?: DocLang, d: Date = new Date()): string {
+  try {
+    return new Intl.DateTimeFormat(lang === "en" ? "en-GB" : "ar", {
+      calendar: "gregory", day: "numeric", month: "long", year: "numeric",
+    }).format(d);
+  } catch {
+    return d.toISOString().split("T")[0];
+  }
+}
+
 // عناوين المستندات لكل نوع مخرج (تُستخدم في الغلاف والترويسة)
 export const DOC_TITLES: Record<DeliverableType, { ar: string; en: string }> = {
   project_charter:          { ar: "ميثاق المشروع", en: "Project Charter" },

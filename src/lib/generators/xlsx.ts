@@ -6,7 +6,7 @@
 import ExcelJS from "exceljs";
 import { getTheme } from "@/lib/themes";
 import type { GenOptions, DocLang } from "./types";
-import { L, isRTL, type DocStrings } from "./labels";
+import { L, isRTL, docDate, type DocStrings } from "./labels";
 
 
 // Brand colors
@@ -117,7 +117,7 @@ function addCoverSheet(wb: ExcelJS.Workbook, title: string, projectName: string)
 
   ws.getCell("B10").value = `${S.generated}:`;
   ws.getCell("B10").font = { size: 10, color: { argb: `FF${TEXT_LIGHT}` } };
-  ws.getCell("C10").value = new Date().toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA");
+  ws.getCell("C10").value = docDate(LANG);
   ws.getCell("C10").font = { size: 10, color: { argb: `FF${TEXT}` } };
 }
 

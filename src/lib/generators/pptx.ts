@@ -5,7 +5,7 @@
 import PptxGenJS from "pptxgenjs";
 import { getTheme } from "@/lib/themes";
 import type { GenOptions, DocLang } from "./types";
-import { L, isRTL, type DocStrings } from "./labels";
+import { L, isRTL, docDate, type DocStrings } from "./labels";
 
 // Brand colors
 let NAVY    = "0F2057";
@@ -72,7 +72,7 @@ function addCoverSlide(pptx: PptxGenJS, title: string, subtitle: string, project
   slide.addText(title, { x: 0.5, y: 2.2, w: 12.5, h: 1.2, fontSize: 40, bold: true, color: WHITE, align: "center", rtlMode: RTL });
   slide.addText(projectName, { x: 0.5, y: 3.5, w: 12.5, h: 0.7, fontSize: 22, color: ACCENT, align: "center", rtlMode: RTL });
   if (subtitle) slide.addText(subtitle, { x: 0.5, y: 4.3, w: 12.5, h: 0.5, fontSize: 14, italic: true, color: TEXT_LIGHT, align: "center", rtlMode: RTL });
-  slide.addText(new Date().toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA"), { x: 0.5, y: 6.5, w: 12.5, h: 0.4, fontSize: 11, color: TEXT_LIGHT, align: "center" });
+  slide.addText(docDate(LANG), { x: 0.5, y: 6.5, w: 12.5, h: 0.4, fontSize: 11, color: TEXT_LIGHT, align: "center" });
   slide.addShape(pptx.ShapeType.line, { x: 3, y: 6.0, w: 7.5, h: 0, line: { color: PRIMARY, width: 1.5 } });
 }
 
