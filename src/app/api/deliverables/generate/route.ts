@@ -267,19 +267,28 @@ export async function POST(req: NextRequest) {
         const builder = pickBuilder(type, format);
         if (builder) {
           const built = builder();
-          try {
-            aiData = (await generateWithClaude({
+          const callAI = (extra = "") =>
+            generateWithClaude({
               system: built.system,
-              user: built.user + langDirective,
+              user: built.user + langDirective + extra,
               maxTokens: 8000,
               model: "claude-haiku-4-5-20251001",
               onUsage: (u) => logAiUsage(supabase, { userId, projectId, promptType: type, model: u.model }, u),
-            })) as Record<string, unknown>;
-          } catch (aiErr) {
-            // لا نُخرج مستنداً فاضياً بصمت — نُظهر السبب الحقيقي للمستخدم
-            throw new Error(
-              `تعذّر توليد محتوى «${type}» عبر الذكاء: ${aiErr instanceof Error ? aiErr.message : "خطأ غير معروف"}`
-            );
+            }) as Promise<Record<string, unknown>>;
+          try {
+            aiData = await callAI();
+          } catch {
+            // إعادة محاولة واحدة باختصار أشد لتفادي بتر الاستجابة
+            try {
+              aiData = await callAI(
+                "\n\nمهم جداً: اختصر أكثر — 4 أقسام كحد أقصى، كل قائمة ≤4 عناصر، كل جدول ≤5 صفوف، كل فقرة جملة واحدة. أخرج JSON مكتملاً وقصيراً."
+              );
+            } catch (aiErr2) {
+              // لا نُخرج مستنداً فاضياً بصمت — نُظهر السبب الحقيقي للمستخدم
+              throw new Error(
+                `تعذّر توليد محتوى «${type}» عبر الذكاء: ${aiErr2 instanceof Error ? aiErr2.message : "خطأ غير معروف"}`
+              );
+            }
           }
         } else {
           aiData = agendaData;
