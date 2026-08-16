@@ -5,7 +5,7 @@
 import {
   Document, Packer, Paragraph, Table, TableRow, TableCell,
   TextRun, HeadingLevel, AlignmentType, WidthType, BorderStyle,
-  ShadingType, Header, Footer, PageNumber,
+  ShadingType, Header, Footer, PageNumber, ImageRun,
   TableLayoutType, VerticalAlign, PageBreak,
   convertInchesToTwip,
 } from "docx";
@@ -80,11 +80,43 @@ function footerParagraph(): Paragraph {
       new TextRun({ text: (WM ? WM_TEXT + "  •  " : "") + (BRAND ? BRAND + "  •  " : "") + S.standard, size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
       new TextRun({ text: `\t${S.page} `, size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
       new TextRun({ children: [PageNumber.CURRENT], size: 16, color: TEXT_LIGHT }),
+      new TextRun({ text: ` ${LANG === "en" ? "of" : "من"} `, size: 16, color: TEXT_LIGHT, rightToLeft: RTL }),
+      new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 16, color: TEXT_LIGHT }),
     ],
     bidirectional: RTL,
     alignment: dir(),
     tabStops: [{ type: RTL ? "left" : "right", position: convertInchesToTwip(6.5) }],
   });
+}
+
+// شعار وضوح الأبيض (يُحمَّل مرة واحدة) — للغلاف الداكن
+let _logo: Buffer | null | undefined;
+function getLogo(): Buffer | null {
+  if (_logo !== undefined) return _logo;
+  try {
+    /* eslint-disable @typescript-eslint/no-var-requires */
+    const fs = require("fs");
+    const path = require("path");
+    _logo = fs.readFileSync(path.join(process.cwd(), "public", "wuduh-assets", "logo-full.png")) as Buffer;
+  } catch {
+    _logo = null;
+  }
+  return _logo!;
+}
+
+// تلوين خلايا الجداول حسب المعنى (RACI / مستويات المخاطر) — للخلايا القصيرة فقط
+function cellTint(text: string): string | null {
+  const t = (text || "").trim();
+  if (t.length > 14) return null;
+  if (/^(r\/a|a\/r|r)$/i.test(t)) return "DCFCE7";
+  if (/^a$/i.test(t)) return "DBEAFE";
+  if (/^c$/i.test(t)) return "FEF9C3";
+  if (/^i$/i.test(t)) return "EEF2F7";
+  if (/حرج|critical/i.test(t)) return "FECACA";
+  if (/عال[ٍيِ]|high/i.test(t)) return "FED7AA";
+  if (/متوسط|medium/i.test(t)) return "FEF9C3";
+  if (/منخفض|low/i.test(t)) return "DCFCE7";
+  return null;
 }
 
 const NO_BORDER = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" } as const;
@@ -94,13 +126,21 @@ const NO_BORDERS = {
 };
 
 function sectionHeading(text: string): Paragraph {
+  const m = text.match(/^\s*(\d+)\.\s*(.*)$/);
+  const children = m
+    ? [
+        new TextRun({ text: `  ${m[1]}  `, bold: true, color: WHITE, size: 24, shading: { type: ShadingType.SOLID, fill: PRIMARY, color: "auto" }, rightToLeft: RTL }),
+        new TextRun({ text: "  ", size: 24 }),
+        new TextRun({ text: m[2], size: 28, bold: true, color: NAVY, rightToLeft: RTL }),
+      ]
+    : [new TextRun({ text, size: 28, bold: true, color: PRIMARY, rightToLeft: RTL })];
   return new Paragraph({
     heading: HeadingLevel.HEADING_1,
     bidirectional: RTL,
     alignment: dir(),
-    children: [new TextRun({ text, size: 28, bold: true, color: PRIMARY, rightToLeft: RTL })],
-    spacing: { before: 400, after: 120 },
-    border: { bottom: { color: ACCENT, size: 8, style: BorderStyle.SINGLE, space: 4 } },
+    children,
+    spacing: { before: 400, after: 140 },
+    border: { bottom: { color: ACCENT, size: 8, style: BorderStyle.SINGLE, space: 6 } },
   });
 }
 
@@ -188,13 +228,16 @@ function makeTable(headers: string[], rows: string[][]): Table {
       }),
       ...R.map((row, rowIdx) =>
         new TableRow({
-          children: row.map(cell =>
-            new TableCell({
-              children: [cellPara(cell, { size: 17, color: TEXT })],
-              shading: { fill: rowIdx % 2 === 0 ? "FFFFFF" : BG_LIGHT, type: ShadingType.CLEAR, color: "auto" },
-              margins: { top: 70, bottom: 70, left: 100, right: 60 },
-            })
-          ),
+          children: row.map(cell => {
+            const tint = cellTint(cell);
+            const bg = tint ?? (rowIdx % 2 === 0 ? "FFFFFF" : BG_LIGHT);
+            return new TableCell({
+              children: [cellPara(cell, { size: 17, color: tint ? NAVY : TEXT, bold: !!tint })],
+              shading: { fill: bg, type: ShadingType.CLEAR, color: "auto" },
+              margins: { top: 80, bottom: 80, left: 110, right: 70 },
+              verticalAlign: VerticalAlign.CENTER,
+            });
+          }),
         })
       ),
     ],
@@ -210,6 +253,24 @@ function coverWhite(text: string, size: number, color: string, bold = true): Par
   });
 }
 
+// محتوى شريط الغلاف: شعار (إن وُجد) + اسم المؤسسة + عنوان المستند + اسم المشروع
+function coverBandChildren(title: string, projectName: string): Paragraph[] {
+  const out: Paragraph[] = [];
+  const logo = getLogo();
+  if (logo) {
+    out.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 160 },
+      children: [new ImageRun({ data: logo, transformation: { width: 172, height: 75 } })],
+    }));
+  }
+  if (BRAND) out.push(coverWhite(BRAND, 26, ACCENT));
+  else if (!logo) out.push(coverWhite("وضوح", 30, ACCENT));
+  out.push(coverWhite(title, 46, WHITE));
+  out.push(coverWhite(projectName, 26, "E2E8F0", false));
+  return out;
+}
+
 // غلاف بهوية لونية: شريط علوي بلون العلامة + عنوان أبيض + اسم المشروع، ثم فاصل مميّز وسطر بيانات
 function coverBlock(title: string, projectName: string, badge?: string): (Paragraph | Table)[] {
   const band = new Table({
@@ -223,11 +284,7 @@ function coverBlock(title: string, projectName: string, badge?: string): (Paragr
             shading: { fill: NAVY, type: ShadingType.CLEAR, color: "auto" },
             margins: { top: 560, bottom: 560, left: 360, right: 360 },
             verticalAlign: VerticalAlign.CENTER,
-            children: [
-              coverWhite(BRAND || "وضوح", 30, ACCENT),
-              coverWhite(title, 46, WHITE),
-              coverWhite(projectName, 26, "E2E8F0", false),
-            ],
+            children: coverBandChildren(title, projectName),
           }),
         ],
       }),
@@ -271,6 +328,7 @@ function buildDoc(title: string, children: (Paragraph | Table)[]): Promise<Uint8
       },
     },
     sections: [{
+      properties: { page: { margin: { top: 1134, bottom: 1134, left: 1080, right: 1080 } } },
       headers: { default: new Header({ children: [headerParagraph(title)] }) },
       footers: { default: new Footer({ children: [footerParagraph()] }) },
       children,
@@ -321,6 +379,16 @@ export async function generateGenericDOCX(
       sec.items.forEach(it => children.push(bulletItem(it)));
     } else if (kind === "table" && sec.rows?.length) {
       children.push(makeTable(sec.headers || [], sec.rows.map(r => r.map(c => String(c ?? "")))));
+      // مفتاح ألوان RACI عند جدول المسؤوليات
+      if (/raci|مسؤولي/i.test(sec.heading || "")) {
+        children.push(new Paragraph({
+          bidirectional: RTL, alignment: dir(), spacing: { before: 100, after: 60 },
+          children: [new TextRun({
+            text: "R = المسؤول عن التنفيذ   ·   A = المعتمِد/المساءل   ·   C = يُستشار   ·   I = يُبلَّغ",
+            size: 16, italics: true, color: TEXT_LIGHT, rightToLeft: RTL,
+          })],
+        }));
+      }
     } else if (kind === "keyvalue" && sec.pairs?.length) {
       children.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
