@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { rateLimit, LIMITS } from "@/lib/rate-limit";
+import { DELIVERABLE_LABELS, type DeliverableType } from "@/types";
 
 const CONTENT_TYPES: Record<string, string> = {
   pdf: "application/pdf",
@@ -75,11 +76,13 @@ export async function GET(
     }
 
     const ext = (deliverable.format as string) || "pdf";
-    const typeName = (deliverable.type as string).replace(/_/g, "-");
-    const projectName = ((deliverable.projects as { name?: string } | null)?.name || "project")
-      .replace(/[^\w؀-ۿ]+/g, "-")
-      .slice(0, 60);
-    const filename = `wuduh-${projectName}-${typeName}.${ext}`;
+    // اسم الملف = اسم المستند (المسجّل بالموقع) ثم اسم المشروع
+    const clean = (s: string) => s.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim();
+    const docName =
+      clean(DELIVERABLE_LABELS[deliverable.type as DeliverableType] || (deliverable.type as string).replace(/_/g, " "))
+        .slice(0, 60);
+    const projectName = clean((deliverable.projects as { name?: string } | null)?.name || "مشروع").slice(0, 70);
+    const filename = `${docName} - ${projectName}.${ext}`;
     const contentType = CONTENT_TYPES[ext] ?? "application/octet-stream";
 
     return new NextResponse(arrayBuffer, {
