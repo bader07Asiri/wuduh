@@ -10,7 +10,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Textarea } from "@/components/ui/Input";
 import {
   CheckCircle, AlertTriangle, Users, Target,
-  Calendar, ChevronDown, ChevronUp, FileDown, Sparkles
+  Calendar, ChevronDown, ChevronUp, FileDown, Sparkles, Pencil
 } from "lucide-react";
 import type { Project, AIAgenda, ProjectPhase, RiskItem } from "@/types";
 import { getRiskColor, getRiskLabel, formatDate } from "@/lib/utils";
@@ -117,11 +117,16 @@ export default function ProjectPage() {
             {formatDate(project.start_date)} — {formatDate(project.end_date)}
           </p>
         </div>
-        {project.agenda_approved && (
-          <Link href={`/projects/${id}/deliverables`}>
-            <Button icon={<FileDown size={18} />}>توليد المخرجات</Button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Link href={`/projects/${id}/edit`}>
+            <Button variant="ghost" icon={<Pencil size={16} />}>تعديل المدخلات</Button>
           </Link>
-        )}
+          {project.agenda_approved && (
+            <Link href={`/projects/${id}/deliverables`}>
+              <Button icon={<FileDown size={18} />}>توليد المخرجات</Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Generating State */}
