@@ -253,7 +253,11 @@ export async function generateGenericDOCX(
   let n = 0;
   for (const sec of sections) {
     n++;
-    if (sec.heading) children.push(sectionHeading(`${n}. ${sec.heading}`));
+    if (sec.heading) {
+      // إزالة أي ترقيم يضعه الذكاء في بداية العنوان لتفادي التكرار «1. 1.»
+      const cleanHeading = sec.heading.replace(/^(\s*\d+[.)\-]\s*)+/, "").trim();
+      children.push(sectionHeading(`${n}. ${cleanHeading}`));
+    }
     const kind = sec.kind
       ?? (sec.rows ? "table" : sec.pairs ? "keyvalue" : sec.items ? "list" : "text");
     if (kind === "text" && sec.text) {
