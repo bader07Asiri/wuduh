@@ -380,7 +380,7 @@ export async function generateGenericDOCX(
     } else if (kind === "table" && sec.rows?.length) {
       children.push(makeTable(sec.headers || [], sec.rows.map(r => r.map(c => String(c ?? "")))));
       // مفتاح ألوان RACI عند جدول المسؤوليات
-      if (/raci|مسؤولي/i.test(sec.heading || "")) {
+      if (/raci|مصفوفة المسؤول/i.test(sec.heading || "")) {
         children.push(new Paragraph({
           bidirectional: RTL, alignment: dir(), spacing: { before: 100, after: 60 },
           children: [new TextRun({
