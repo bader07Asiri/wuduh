@@ -125,21 +125,21 @@ const NO_BORDERS = {
   insideHorizontal: NO_BORDER, insideVertical: NO_BORDER,
 };
 
+// رأس القسم: الرقم بلون مميّز ثم العنوان بلون داكن، فقرة RTL مع خط سفلي مميّز
 function sectionHeading(text: string): Paragraph {
   const m = text.match(/^\s*(\d+)\.\s*(.*)$/);
   const children = m
     ? [
-        new TextRun({ text: `  ${m[1]}  `, bold: true, color: WHITE, size: 24, shading: { type: ShadingType.SOLID, fill: PRIMARY, color: "auto" }, rightToLeft: RTL }),
-        new TextRun({ text: "  ", size: 24 }),
-        new TextRun({ text: m[2], size: 28, bold: true, color: NAVY, rightToLeft: RTL }),
+        new TextRun({ text: `${m[1]}.`, bold: true, color: PRIMARY, size: 30, rightToLeft: RTL }),
+        new TextRun({ text: `  ${m[2]}`, bold: true, color: NAVY, size: 28, rightToLeft: RTL }),
       ]
-    : [new TextRun({ text, size: 28, bold: true, color: PRIMARY, rightToLeft: RTL })];
+    : [new TextRun({ text, bold: true, color: NAVY, size: 28, rightToLeft: RTL })];
   return new Paragraph({
     heading: HeadingLevel.HEADING_1,
     bidirectional: RTL,
     alignment: dir(),
     children,
-    spacing: { before: 400, after: 140 },
+    spacing: { before: 360, after: 140 },
     border: { bottom: { color: ACCENT, size: 8, style: BorderStyle.SINGLE, space: 6 } },
   });
 }
@@ -204,21 +204,20 @@ function infoRow(label: string, value: string): TableRow {
     verticalAlign: VerticalAlign.CENTER,
     margins: { top: 80, bottom: 80, left: 120, right: 80 },
   });
-  // في RTL نضع خانة التسمية على اليمين
-  return new TableRow({ children: RTL ? [valueCell, labelCell] : [labelCell, valueCell] });
+  // الترتيب المنطقي [التسمية، القيمة] — والاتجاه يُضبط بـ visuallyRightToLeft على الجدول
+  return new TableRow({ children: [labelCell, valueCell] });
 }
 
 function makeTable(headers: string[], rows: string[][]): Table {
-  // في RTL نعكس ترتيب الأعمدة بصرياً لتُقرأ من اليمين لليسار
-  const H = RTL ? [...headers].reverse() : headers;
-  const R = RTL ? rows.map(r => [...r].reverse()) : rows;
+  // RTL صحيح عبر visuallyRightToLeft — العمود الأول يظهر يميناً والترتيب المنطقي محفوظ
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     layout: TableLayoutType.FIXED,
+    visuallyRightToLeft: RTL,
     rows: [
       new TableRow({
         tableHeader: true,
-        children: H.map(h =>
+        children: headers.map(h =>
           new TableCell({
             children: [cellPara(h, { size: 18, bold: true, color: WHITE })],
             shading: { fill: NAVY, type: ShadingType.CLEAR, color: "auto" },
@@ -226,7 +225,7 @@ function makeTable(headers: string[], rows: string[][]): Table {
           })
         ),
       }),
-      ...R.map((row, rowIdx) =>
+      ...rows.map((row, rowIdx) =>
         new TableRow({
           children: row.map(cell => {
             const tint = cellTint(cell);
@@ -392,6 +391,7 @@ export async function generateGenericDOCX(
     } else if (kind === "keyvalue" && sec.pairs?.length) {
       children.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
+        visuallyRightToLeft: RTL,
         rows: sec.pairs.map(([k, v]) => infoRow(k, String(v ?? ""))),
       }));
     } else if (sec.text) {
@@ -419,6 +419,7 @@ export async function generateCharterDOCX(data: Record<string, unknown>, project
   children.push(sectionHeading(`1. ${S.docInfo}`));
   children.push(new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    visuallyRightToLeft: RTL,
     rows: [
       infoRow(S.projectName, (data.project_name as string) || projectName),
       infoRow(S.docNumber, (data.project_number as string) || "WUD-001"),
@@ -484,7 +485,8 @@ export async function generateCharterDOCX(data: Record<string, unknown>, project
   const cells = [sigCell(S.sponsor), sigCell(S.projectManager)];
   children.push(new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
-    rows: [new TableRow({ children: RTL ? cells.reverse() : cells })],
+    visuallyRightToLeft: RTL,
+    rows: [new TableRow({ children: cells })],
   }));
 
   return buildDoc(title, children);
@@ -594,6 +596,7 @@ export async function generateRiskRegisterDOCX(data: Record<string, unknown>, pr
     children.push(subHeading(`${r.id}: ${(r.risk_statement || "").substring(0, 60)}`));
     children.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
+      visuallyRightToLeft: RTL,
       rows: [
         infoRow(S.strategy, r.response_strategy),
         infoRow(S.contingency, r.contingency_plan),
