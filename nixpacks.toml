@@ -1,0 +1,27 @@
+# ============================
+# وضوح | Wuduh — إعداد البناء (nixpacks)
+# يثبّت LibreOffice (لتحويل DOCX→PDF بعربي سليم) وخطوط عربية على صورة التطبيق.
+# ملاحظة: LibreOffice ثقيل نسبياً — تأكّد أن الـswap مفعّل قبل إعادة النشر لتفادي OOM.
+# ============================
+
+[phases.setup]
+aptPkgs = [
+  "libreoffice-writer",
+  "libreoffice-calc",
+  "libreoffice-impress",
+  "fontconfig",
+  "fonts-noto-core",
+]
+
+# نسخ خطوط وضوح المرفقة (Noto Sans Arabic) إلى مجلد خطوط النظام + تحديث الكاش
+[phases.fonts]
+dependsOn = ["install"]
+cmds = [
+  "mkdir -p /usr/share/fonts/truetype/wuduh",
+  "cp -f public/fonts/*.ttf /usr/share/fonts/truetype/wuduh/ 2>/dev/null || true",
+  "fc-cache -f 2>/dev/null || true",
+]
+
+# جعل خطوة البناء تعتمد على تجهيز الخطوط
+[phases.build]
+dependsOn = ["fonts"]

@@ -17,7 +17,7 @@ import {
 import type { DeliverableType, DeliverableFormat } from "@/types";
 
 // File generators
-import { generateCharterPDF, generateRiskRegisterPDF, generateProjectPlanPDF } from "@/lib/generators/pdf";
+import { docxToPdf } from "@/lib/pdf/docx-to-pdf";
 import { generateCharterDOCX, generateProjectPlanDOCX, generateRiskRegisterDOCX, generateGenericDOCX } from "@/lib/generators/docx";
 import { generateWBSXLSX, generateRiskRegisterXLSX, generateGanttXLSX, generateBudgetXLSX } from "@/lib/generators/xlsx";
 import { generateKickoffPPTX, generateStakeholderPPTX, generateProgressReportPPTX } from "@/lib/generators/pptx";
@@ -54,19 +54,24 @@ async function generateFile(
 
   const lang: DocLang = opts?.lang ?? "ar";
 
+  // يبني مستند Word للنوع المطلوب (يُعاد استخدامه لـDOCX ولـPDF عبر LibreOffice)
+  const buildDocx = async (): Promise<Uint8Array> => {
+    if (type === "project_charter") return generateCharterDOCX(aiData, projectName, opts);
+    if (type === "project_plan") return generateProjectPlanDOCX(agendaData, projectName, opts);
+    if (type === "risk_register") return generateRiskRegisterDOCX(aiData, projectName, opts);
+    return generateGenericDOCX(aiData, projectName, docTitle(type, lang), opts);
+  };
+
   if (format === "pdf") {
     ext = "pdf";
     contentType = "application/pdf";
-    if (type === "project_charter") buffer = await generateCharterPDF(aiData, projectName, opts);
-    else if (type === "risk_register") buffer = await generateRiskRegisterPDF(aiData, projectName, opts);
-    else buffer = await generateProjectPlanPDF(agendaData, projectName, opts);
+    // PDF عربي سليم = DOCX ثم تحويله عبر LibreOffice
+    const docxBuf = await buildDocx();
+    buffer = await docxToPdf(docxBuf);
   } else if (format === "docx") {
     ext = "docx";
     contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    if (type === "project_charter") buffer = await generateCharterDOCX(aiData, projectName, opts);
-    else if (type === "project_plan") buffer = await generateProjectPlanDOCX(agendaData, projectName, opts);
-    else if (type === "risk_register") buffer = await generateRiskRegisterDOCX(aiData, projectName, opts);
-    else buffer = await generateGenericDOCX(aiData, projectName, docTitle(type, lang), opts);
+    buffer = await buildDocx();
   } else if (format === "xlsx") {
     ext = "xlsx";
     contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -176,20 +181,25 @@ export async function POST(req: NextRequest) {
 
   const branding = resolveBranding(plan, org, { themeId, useOrgIdentity, includeSignature });
 
-  // ثيم مخصّص بألوان المستخدم إن وُجدت، وإلا الثيم الجاهز
-  const base = getTheme(themeId);
-  const customTheme: DocTheme | null = customColors
+  // ===== Brand System ثلاثي الطبقات: منصة ← مؤسسة ← مشروع/طلب =====
+  // الطبقة 1: افتراضيات المنصة (وضوح)
+  const platform = getTheme(themeId);
+  // الطبقة 2: هوية المؤسسة (لونها الأساسي إن وُجد وسُمح به بالباقة)
+  const orgColor = branding.org?.primary_color;
+  const orgBase: DocTheme = orgColor && /^#?[0-9a-fA-F]{6}$/.test(orgColor)
+    ? { ...platform, primary: orgColor.startsWith("#") ? orgColor : `#${orgColor}` }
+    : platform;
+  // الطبقة 3: تجاوز المشروع/الطلب (الألوان المخصصة التي اختارها المستخدم)
+  const theme: DocTheme = customColors
     ? {
-        id: "custom",
-        name: "ألوان مخصصة",
-        nameEn: "Custom",
-        dark: hex(customColors.dark, base.dark)!,
-        primary: hex(customColors.primary, base.primary)!,
-        accent: hex(customColors.accent, base.accent)!,
-        light: hex(customColors.light, base.light)!,
+        id: "custom", name: "ألوان مخصصة", nameEn: "Custom",
+        dark: hex(customColors.dark, orgBase.dark)!,
+        primary: hex(customColors.primary, orgBase.primary)!,
+        accent: hex(customColors.accent, orgBase.accent)!,
+        light: hex(customColors.light, orgBase.light)!,
       }
-    : null;
-  const genOptions: GenOptions = { theme: customTheme ?? base, branding, lang };
+    : orgBase;
+  const genOptions: GenOptions = { theme, branding, lang, fontArabic: "Noto Sans Arabic" };
 
   // إذا اختار الإنجليزية: ترجم بيانات الأجندة مرة واحدة لتخرج كل المستندات إنجليزية
   let effectiveAgenda = agendaData;

@@ -30,6 +30,7 @@ let WM_TEXT = "";
 let LANG: DocLang = "ar";
 let RTL = true;
 let S: DocStrings = L("ar");
+let FONT = "Noto Sans Arabic";
 
 function applyTheme(opts?: GenOptions) {
   // نستخدم كائن الثيم مباشرة (يدعم الألوان المخصّصة) بدل البحث بالمعرّف
@@ -44,6 +45,7 @@ function applyTheme(opts?: GenOptions) {
   LANG = opts?.lang ?? "ar";
   RTL = isRTL(LANG);
   S = L(LANG);
+  FONT = opts?.fontArabic || "Noto Sans Arabic";
 }
 
 const dir = () => (RTL ? AlignmentType.RIGHT : AlignmentType.LEFT);
@@ -321,7 +323,7 @@ function buildDoc(title: string, children: (Paragraph | Table)[]): Promise<Uint8
     styles: {
       default: {
         document: {
-          run: { font: "Calibri", size: 20, color: TEXT },
+          run: { font: FONT, size: 20, color: TEXT },
           paragraph: { spacing: { line: 288 } },
         },
       },

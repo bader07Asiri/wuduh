@@ -7,5 +7,6 @@ export type DocLang = "ar" | "en";
 export interface GenOptions {
   theme: DocTheme;
   branding: BrandingConfig;
-  lang?: DocLang; // لغة نصوص القالب الثابتة (الافتراضي: عربي)
+  lang?: DocLang;      // لغة نصوص القالب الثابتة (الافتراضي: عربي)
+  fontArabic?: string; // الخط العربي المعتمد (مثبّت على السيرفر) — الافتراضي Noto Sans Arabic
 }

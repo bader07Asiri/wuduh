@@ -24,11 +24,11 @@ const DELIVERABLE_GROUPS: { name: string; items: DeliverableOption[] }[] = [
   {
     name: "وثائق التخطيط الأساسية",
     items: [
-      { type: "project_charter",     formats: ["docx"], recommended: true },
-      { type: "project_plan",        formats: ["docx"], recommended: true },
-      { type: "scope_statement",     formats: ["docx"] },
+      { type: "project_charter",     formats: ["docx", "pdf"], recommended: true },
+      { type: "project_plan",        formats: ["docx", "pdf"], recommended: true },
+      { type: "scope_statement",     formats: ["docx", "pdf"] },
       { type: "wbs",                 formats: ["xlsx"], recommended: true },
-      { type: "stakeholder_register",formats: ["docx"] },
+      { type: "stakeholder_register",formats: ["docx", "pdf"] },
     ],
   },
   {
@@ -36,13 +36,13 @@ const DELIVERABLE_GROUPS: { name: string; items: DeliverableOption[] }[] = [
     items: [
       { type: "gantt_chart",   formats: ["xlsx"], recommended: true },
       { type: "schedule",      formats: ["xlsx"] },
-      { type: "milestone_chart", formats: ["docx"] },
+      { type: "milestone_chart", formats: ["docx", "pdf"] },
     ],
   },
   {
     name: "الموارد والميزانية",
     items: [
-      { type: "resource_plan",  formats: ["docx"] },
+      { type: "resource_plan",  formats: ["docx", "pdf"] },
       { type: "budget",         formats: ["xlsx"], recommended: true },
       { type: "cost_estimates", formats: ["xlsx"] },
     ],
@@ -51,17 +51,17 @@ const DELIVERABLE_GROUPS: { name: string; items: DeliverableOption[] }[] = [
     name: "المخاطر والجودة",
     items: [
       { type: "risk_register",  formats: ["xlsx"], recommended: true },
-      { type: "risk_response",  formats: ["docx"] },
-      { type: "quality_plan",   formats: ["docx"] },
-      { type: "quality_checklist", formats: ["docx"] },
+      { type: "risk_response",  formats: ["docx", "pdf"] },
+      { type: "quality_plan",   formats: ["docx", "pdf"] },
+      { type: "quality_checklist", formats: ["docx", "pdf"] },
     ],
   },
   {
     name: "التواصل والتقارير",
     items: [
-      { type: "communication_plan", formats: ["docx"] },
-      { type: "status_report",      formats: ["docx"] },
-      { type: "meeting_minutes",    formats: ["docx"] },
+      { type: "communication_plan", formats: ["docx", "pdf"] },
+      { type: "status_report",      formats: ["docx", "pdf"] },
+      { type: "meeting_minutes",    formats: ["docx", "pdf"] },
     ],
   },
   {
@@ -75,9 +75,9 @@ const DELIVERABLE_GROUPS: { name: string; items: DeliverableOption[] }[] = [
   {
     name: "إغلاق المشروع",
     items: [
-      { type: "closure_report",    formats: ["docx"] },
-      { type: "lessons_learned",   formats: ["docx"] },
-      { type: "closure_checklist", formats: ["docx"] },
+      { type: "closure_report",    formats: ["docx", "pdf"] },
+      { type: "lessons_learned",   formats: ["docx", "pdf"] },
+      { type: "closure_checklist", formats: ["docx", "pdf"] },
     ],
   },
 ];
