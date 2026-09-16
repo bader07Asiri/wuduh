@@ -173,6 +173,9 @@ ${formatIntake(project.intake)}
           "name": "اسم المهمة",
           "description": "وصف المهمة",
           "duration_days": 5,
+          "effort_hours": 40,
+          "start_week": 1,
+          "end_week": 2,
           "dependencies": [],
           "responsible": "المسمى الوظيفي",
           "priority": "critical | high | medium | low"
@@ -217,11 +220,13 @@ ${formatIntake(project.intake)}
       "frequency": "التكرار"
     }
   ],
+  "critical_success_factors": ["عامل نجاح حرج 1", "عامل نجاح حرج 2", "عامل نجاح حرج 3"],
   "recommendations": ["توصية 1", "توصية 2", "توصية 3"]
 }
 
 قيود صارمة على الحجم (إلزامية لتفادي انقطاع الإخراج):
 - 3 مراحل بالضبط (لا أكثر)
+- critical_success_factors: 3 عوامل كحد أقصى
 - 3 مهام لكل مرحلة بالضبط (لا أكثر)
 - 3 معالم رئيسية بالضبط
 - 3 مخاطر بالضبط مع درجات خطر محسوبة (probability_score × impact_score)
