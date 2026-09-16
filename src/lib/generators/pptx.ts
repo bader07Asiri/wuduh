@@ -271,6 +271,9 @@ export async function generateStakeholderPPTX(agendaData: Record<string, unknown
 export async function generateProgressReportPPTX(reportData: Record<string, unknown>, projectName: string, opts?: GenOptions): Promise<Uint8Array> {
   applyTheme(opts);
   const pptx = createPptx();
+  // مخطّط تقرير الحالة من الذكاء يأتي داخل report_template — نفكّه هنا مع fallback
+  const rt = ((reportData.report_template as Record<string, unknown>) ?? reportData) as Record<string, unknown>;
+  const overall = (rt.overall_status as { status?: string; summary?: string }) ?? {};
 
   addCoverSlide(pptx, ar("تقرير التقدّم", "Progress Report"), ar("تقرير دوري", "Status"), projectName);
 
@@ -278,7 +281,7 @@ export async function generateProgressReportPPTX(reportData: Record<string, unkn
   addSlideHeader(dashSlide, pptx, ar("لوحة الحالة", "Status Dashboard"));
   slideTitle(dashSlide, ar("لوحة حالة المشروع", "Project Status Dashboard"));
   const statusItems = [
-    { label: ar("الجدول الزمني", "Schedule"), status: (reportData.schedule_status as string) || ar("ضمن الخطة", "On Track"), color: SUCCESS },
+    { label: ar("الحالة العامة", "Overall"), status: overall.status || ar("ضمن الخطة", "On Track"), color: SUCCESS },
     { label: ar("الميزانية", "Budget"), status: (reportData.budget_status as string) || ar("ضمن الميزانية", "On Budget"), color: SUCCESS },
     { label: ar("النطاق", "Scope"), status: (reportData.scope_status as string) || ar("مُنضبط", "Controlled"), color: ACCENT },
     { label: ar("الجودة", "Quality"), status: (reportData.quality_status as string) || ar("مطابق للمعايير", "Meeting Standards"), color: PRIMARY },
@@ -290,13 +293,13 @@ export async function generateProgressReportPPTX(reportData: Record<string, unkn
     dashSlide.addText("●", { x: 0.5 + i * 3.2, y: 2.2, w: 3.0, h: 0.8, fontSize: 28, color: item.color, align: "center" });
     dashSlide.addText(item.status, { x: 0.5 + i * 3.2, y: 3.0, w: 3.0, h: 0.6, fontSize: 10, color: TEXT_MID, align: "center", rtlMode: RTL });
   });
-  const summary = (reportData.executive_summary as string) || "";
+  const summary = (rt.executive_summary as string) || overall.summary || "";
   if (summary) dashSlide.addText(summary, { x: 0.5, y: 4.0, w: 12.5, h: 1.5, fontSize: 12, color: TEXT_MID, wrap: true, rtlMode: RTL, align: bodyAlign() });
 
   const accompSlide = pptx.addSlide();
   addSlideHeader(accompSlide, pptx, ar("الإنجازات والخطوات التالية", "Accomplishments & Next Steps"));
   slideTitle(accompSlide, ar("أبرز إنجازات الفترة", "This Period Highlights"));
-  const accomplishments = (reportData.accomplishments as string[]) || [];
+  const accomplishments = (rt.accomplishments as string[]) || [];
   accomplishments.slice(0, 4).forEach((item, i) => {
     accompSlide.addShape(pptx.ShapeType.roundRect, { x: 0.5, y: 1.7 + i * 1.1, w: 12.5, h: 0.9, fill: { color: BG_LIGHT }, line: { color: SUCCESS, width: 1.5 } });
     accompSlide.addText("✓", { x: RTL ? 12.3 : 0.6, y: 1.75 + i * 1.1, w: 0.5, h: 0.8, fontSize: 14, bold: true, color: SUCCESS, valign: "middle" });
