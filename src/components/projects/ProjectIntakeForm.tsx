@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import {
   ArrowLeft, Plus, X, Sparkles, ChevronDown, Gauge, Save,
   Target, Users, Layers, Calendar, Wallet, AlertTriangle, ShieldCheck,
+  Upload, FileSpreadsheet, Loader2, Download,
 } from "lucide-react";
 import type {
   ProjectFormData, IntakeDetails, StakeholderInput,
@@ -121,6 +122,8 @@ export function ProjectIntakeForm({
   const [loading, setLoading] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ scope: true });
   const [form, setForm] = useState<ProjectFormData>(initial ?? DEFAULT_FORM);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const set = (field: keyof ProjectFormData, value: unknown) => setForm((f) => ({ ...f, [field]: value }));
   const intake = form.intake ?? {};
@@ -128,6 +131,42 @@ export function ProjectIntakeForm({
     setForm((f) => ({ ...f, intake: { ...(f.intake ?? {}), [key]: value } }));
   const toggle = (id: string) => setOpenSections((s) => ({ ...s, [id]: !s[id] }));
   const strength = useMemo(() => scoreIntake(intake), [intake]);
+
+  // رفع قالب Excel وتعبئة الحقول تلقائياً (يُقرأ على السيرفر)
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/projects/parse-template", { method: "POST", body: fd });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "");
+      const { form: p } = await res.json();
+      setForm(prev => ({
+        ...prev,
+        name: p.name || prev.name,
+        description: p.description || prev.description,
+        client_name: p.client_name || prev.client_name,
+        start_date: p.start_date || prev.start_date,
+        end_date: p.end_date || prev.end_date,
+        budget: p.budget ?? prev.budget,
+        currency: p.currency || prev.currency,
+        team_size: p.team_size || prev.team_size,
+        objectives: (p.objectives && p.objectives.length) ? p.objectives : prev.objectives,
+        constraints: p.constraints || prev.constraints,
+        assumptions: p.assumptions || prev.assumptions,
+        pmbok_edition: (p.pmbok_edition as "7" | "8") || prev.pmbok_edition,
+        intake: { ...(prev.intake ?? {}), ...(p.intake ?? {}) },
+      }));
+      toast.success("تمت تعبئة الحقول من الملف — راجعها قبل الاعتماد.");
+    } catch (err) {
+      toast.error("تعذّر قراءة الملف. تأكد أنه القالب الصحيح.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
 
   const addObjective = () => set("objectives", [...form.objectives, ""]);
   const removeObjective = (i: number) => set("objectives", form.objectives.filter((_, idx) => idx !== i));
@@ -251,6 +290,29 @@ export function ProjectIntakeForm({
               <h2 className="text-xl font-black text-slate-900 font-arabic mb-1">{steps[0]}</h2>
               <p className="text-slate-400 font-arabic text-sm">المعلومات الأساسية عن مشروعك</p>
             </div>
+
+            {/* تعبئة سريعة عبر رفع قالب Excel */}
+            <div className="rounded-2xl border border-brand-blue/20 bg-brand-blue/5 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <FileSpreadsheet size={18} className="text-brand-blue" />
+                <span className="font-bold text-slate-800 font-arabic text-sm">عندك بيانات كثيرة؟ عبّها في ملف وارفعه</span>
+              </div>
+              <p className="text-xs text-slate-500 font-arabic mb-3 leading-relaxed">
+                حمّل القالب، اكتب فيه بياناتك بأريحية، ثم ارفعه لتتعبأ كل الحقول تلقائياً — وتراجعها قبل الاعتماد.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <a href="/templates/قالب-بيانات-المشروع.xlsx" download
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-arabic font-bold text-slate-700 hover:border-brand-blue/40 transition">
+                  <Download size={15} /> تحميل القالب
+                </a>
+                <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand-blue px-3 py-2 text-sm font-arabic font-bold text-white hover:bg-blue-700 transition disabled:opacity-70">
+                  {uploading ? <><Loader2 size={15} className="animate-spin" /> جارٍ القراءة…</> : <><Upload size={15} /> رفع ملف معبّأ</>}
+                </button>
+                <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleUpload} className="hidden" />
+              </div>
+            </div>
+
             <Input label="اسم المشروع" required placeholder="مثال: مشروع توسعة المبنى الإداري" value={form.name} onChange={(e) => set("name", e.target.value)} />
             <Textarea label="وصف المشروع" required placeholder="اشرح مشروعك بإيجاز — السياق، لماذا يُنفّذ، والنتيجة المرجوّة" value={form.description} onChange={(e) => set("description", e.target.value)} rows={3} />
             <Input label="العميل / الجهة المستفيدة" placeholder="مثال: وزارة الإسكان" value={form.client_name ?? ""} onChange={(e) => set("client_name", e.target.value)} />
