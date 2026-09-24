@@ -143,7 +143,7 @@ export function Sidebar() {
           <span className="text-slate-900 text-xs font-bold font-arabic">ترقية الخطة</span>
         </div>
         <p className="text-slate-500 text-xs font-arabic leading-relaxed mb-2">
-          احصل على مشاريع غير محدودة وكل المخرجات
+          ارقِ لمزيد من المخرجات وإدارة فريقك وأقسامك
         </p>
         <Link href="/settings" className="block text-center text-xs font-bold text-brand-blue hover:underline font-arabic">
           ترقية الآن ←
