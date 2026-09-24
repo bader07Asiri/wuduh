@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { getAccessibleProject } from "@/lib/org-access";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,10 +12,9 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabase
-    .from("projects").select("*").eq("id", params.id).eq("user_id", userId).single();
-
-  if (error || !data) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  // عرض المشروع بصلاحية المؤسسة (مالكه أو نفس القسم أو مُشارَك أو المالك/المشرف)
+  const data = await getAccessibleProject(userId, params.id);
+  if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(data);
 }
 
