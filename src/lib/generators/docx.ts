@@ -31,6 +31,7 @@ let LANG: DocLang = "ar";
 let RTL = true;
 let S: DocStrings = L("ar");
 let FONT = "Noto Sans Arabic";
+let ORG_LOGO: Uint8Array | null = null; // شعار المؤسسة (يُضبط لكل مستند) — يستبدل شعار وضوح في الغلاف
 
 function applyTheme(opts?: GenOptions) {
   // نستخدم كائن الثيم مباشرة (يدعم الألوان المخصّصة) بدل البحث بالمعرّف
@@ -40,6 +41,7 @@ function applyTheme(opts?: GenOptions) {
   ACCENT = (t.accent || "#0EA5E9").replace("#", "");
   const org = opts?.branding?.org ?? null;
   BRAND = org?.name ?? "";
+  ORG_LOGO = opts?.branding?.orgLogoData ?? null;
   WM = !!opts?.branding?.showWatermark;
   WM_TEXT = opts?.branding?.watermarkText ?? "وضوح";
   LANG = opts?.lang ?? "ar";
@@ -257,7 +259,8 @@ function coverWhite(text: string, size: number, color: string, bold = true): Par
 // محتوى شريط الغلاف: شعار (إن وُجد) + اسم المؤسسة + عنوان المستند + اسم المشروع
 function coverBandChildren(title: string, projectName: string): Paragraph[] {
   const out: Paragraph[] = [];
-  const logo = getLogo();
+  // شعار المؤسسة إن وُجد (هوية المؤسسة)، وإلا شعار وضوح
+  const logo: Uint8Array | Buffer | null = ORG_LOGO ?? getLogo();
   if (logo) {
     out.push(new Paragraph({
       alignment: AlignmentType.CENTER,
