@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, FolderOpen, PlusCircle,
   Settings, LogOut, ChevronRight,
-  Building2, Users, Layers, ShieldCheck, Sparkles
+  Building2, Users, Layers, ShieldCheck, Sparkles, SlidersHorizontal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useClerk, useUser } from "@clerk/nextjs";
@@ -19,6 +19,7 @@ const navItems = [
 ];
 
 const orgItems = [
+  { label: "إعدادات المؤسسة", href: "/org/edit", icon: SlidersHorizontal },
   { label: "الأقسام", href: "/org/departments", icon: Layers },
   { label: "الأعضاء", href: "/org/members",     icon: Users },
 ];
