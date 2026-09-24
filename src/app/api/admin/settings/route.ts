@@ -1,18 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "";
-
-async function verifyAdmin(userId: string) {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("user_profiles")
-    .select("email")
-    .eq("clerk_id", userId)
-    .single();
-  return !!data?.email && data.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-}
+import { verifyAdmin } from "@/lib/admin-auth";
 
 // GET /api/admin/settings — returns all site settings as { key: value }
 export async function GET() {
