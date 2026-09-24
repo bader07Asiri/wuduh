@@ -12,14 +12,27 @@ import type { OrgMember, OrgDepartment } from "@/types";
 const ROLE_LABELS: Record<string, string> = {
   owner: "مالك",
   admin: "مدير",
+  dept_manager: "مدير قسم",
   member: "عضو",
 };
 
 const ROLE_VARIANT: Record<string, "gold" | "success" | "info"> = {
   owner: "gold",
   admin: "success",
+  dept_manager: "success",
   member: "info",
 };
+
+const ROLE_OPTIONS = [
+  { value: "member", label: "عضو" },
+  { value: "dept_manager", label: "مدير قسم" },
+  { value: "admin", label: "مدير" },
+];
+
+const TYPE_OPTIONS = [
+  { value: "producer", label: "منتِج (يولّد — مقعد مدفوع)" },
+  { value: "supervisor", label: "مشرف (رقابة فقط — مجاني)" },
+];
 
 const STATUS_LABELS: Record<string, string> = {
   active: "نشط",
@@ -34,7 +47,7 @@ export default function MembersPage() {
   const [myRole, setMyRole]         = useState<string>("member");
   const [showForm, setShowForm]     = useState(false);
   const [saving, setSaving]         = useState(false);
-  const [form, setForm]             = useState({ email: "", full_name: "", dept_id: "", role: "member" });
+  const [form, setForm]             = useState({ email: "", full_name: "", dept_id: "", role: "member", can_generate: true });
 
   useEffect(() => { fetchData(); }, []);
 
@@ -64,7 +77,7 @@ export default function MembersPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setMembers(m => [...m, data.member]);
-      setForm({ email: "", full_name: "", dept_id: "", role: "member" });
+      setForm({ email: "", full_name: "", dept_id: "", role: "member", can_generate: true });
       setShowForm(false);
       toast.success(data.alreadyRegistered ? "تم إضافة العضو!" : "تم إرسال الدعوة!");
     } catch (e: unknown) {
@@ -102,6 +115,16 @@ export default function MembersPage() {
     const dept = departments.find(d => d.id === dept_id);
     setMembers(m => m.map(x => x.id === memberId ? { ...x, dept_id, department: dept } : x));
     toast.success("تم تحديث القسم");
+  }
+
+  async function changeType(memberId: string, can_generate: boolean) {
+    await fetch("/api/org/members", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ memberId, can_generate }),
+    });
+    setMembers(m => m.map(x => x.id === memberId ? { ...x, can_generate } : x));
+    toast.success(can_generate ? "أصبح منتِجاً (مقعد مدفوع)" : "أصبح مشرفاً (مجاني)");
   }
 
   const isAdmin = ["owner", "admin"].includes(myRole);
@@ -167,12 +190,20 @@ export default function MembersPage() {
               label="الدور"
               value={form.role}
               onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-              options={[
-                { value: "member", label: "عضو" },
-                { value: "admin",  label: "مدير" },
-              ]}
+              options={ROLE_OPTIONS}
+            />
+            <Select
+              label="النوع (الفوترة)"
+              value={form.can_generate ? "producer" : "supervisor"}
+              onChange={e => setForm(f => ({ ...f, can_generate: e.target.value === "producer" }))}
+              options={TYPE_OPTIONS}
             />
           </div>
+          <p className="text-xs text-slate-500 font-arabic mb-3 leading-relaxed">
+            <strong>منتِج:</strong> يولّد المستندات وله مزايا الاحترافي — يُحتسب مقعداً مدفوعاً على الحساب الرئيسي.
+            <br />
+            <strong>مشرف:</strong> متابعة وإشراف فقط بدون توليد — <strong>بلا تكلفة إضافية</strong>.
+          </p>
           <div className="flex gap-3">
             <Button variant="ghost" onClick={() => setShowForm(false)}>إلغاء</Button>
             <Button loading={saving} onClick={addMember} icon={<UserPlus size={16} />}>
@@ -189,10 +220,11 @@ export default function MembersPage() {
       <Card padding="none">
         <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
           <div className="grid grid-cols-12 text-xs font-bold text-slate-400 font-arabic uppercase">
-            <span className="col-span-4">العضو</span>
+            <span className="col-span-3">العضو</span>
             <span className="col-span-3">القسم</span>
             <span className="col-span-2">الدور</span>
-            <span className="col-span-2">الحالة</span>
+            <span className="col-span-2">النوع</span>
+            <span className="col-span-1">الحالة</span>
             <span className="col-span-1"></span>
           </div>
         </div>
@@ -207,7 +239,7 @@ export default function MembersPage() {
             {members.map(member => (
               <div key={member.id} className="grid grid-cols-12 items-center px-5 py-3.5 hover:bg-slate-50/50 transition-colors">
                 {/* Avatar + Name */}
-                <div className="col-span-4 flex items-center gap-3">
+                <div className="col-span-3 flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                     {(member.full_name || member.email)?.[0]?.toUpperCase() ?? "م"}
                   </div>
@@ -246,8 +278,9 @@ export default function MembersPage() {
                       onChange={e => changeRole(member.id, e.target.value)}
                       className="text-xs font-arabic bg-transparent border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:border-brand-blue"
                     >
-                      <option value="member">عضو</option>
-                      <option value="admin">مدير</option>
+                      {ROLE_OPTIONS.map(o => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
                     </select>
                   ) : (
                     <Badge variant={ROLE_VARIANT[member.role] ?? "info"} className="text-xs">
@@ -257,8 +290,28 @@ export default function MembersPage() {
                   )}
                 </div>
 
-                {/* Status */}
+                {/* Type: منتِج / مشرف */}
                 <div className="col-span-2">
+                  {isAdmin && member.role !== "owner" ? (
+                    <select
+                      value={member.can_generate === false ? "supervisor" : "producer"}
+                      onChange={e => changeType(member.id, e.target.value === "producer")}
+                      className="text-xs font-arabic bg-transparent border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:border-brand-blue"
+                    >
+                      <option value="producer">منتِج</option>
+                      <option value="supervisor">مشرف</option>
+                    </select>
+                  ) : (
+                    <span className={`text-xs font-arabic px-2 py-0.5 rounded-full ${
+                      member.can_generate === false ? "bg-slate-100 text-slate-500" : "bg-brand-blue/10 text-brand-blue"
+                    }`}>
+                      {member.can_generate === false ? "مشرف" : "منتِج"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Status */}
+                <div className="col-span-1">
                   <span className={`text-xs font-arabic px-2 py-0.5 rounded-full ${
                     member.status === "active" ? "bg-emerald-50 text-emerald-600" :
                     member.status === "invited" ? "bg-brand-cyan/10 text-amber-600" :
