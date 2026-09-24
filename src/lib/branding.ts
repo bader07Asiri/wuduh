@@ -36,6 +36,7 @@ export interface BrandingConfig {
   showWuduhLogo: boolean;      // شعار وضوح في الترويسة — مطفأ دائماً حسب الطلب
   canUseOrgIdentity: boolean;  // هل الباقة تسمح بهوية المؤسسة
   org: OrgBranding | null;     // هوية المؤسسة إن وُجدت وسُمح بها
+  orgLogoData?: Uint8Array | null; // بايتات شعار المؤسسة (تُجلب في الـroute) لتضمينه في الغلاف
   includeSignature: boolean;
 }
 
