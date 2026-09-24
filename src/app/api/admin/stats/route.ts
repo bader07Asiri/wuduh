@@ -1,25 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { verifyAdmin } from "@/lib/admin-auth";
 import { PLANS } from "@/types";
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "";
 
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await verifyAdmin(userId))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const supabase = createAdminClient();
-
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("email")
-    .eq("clerk_id", userId)
-    .single();
-
-  if (!profile?.email || profile.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
 
   const [
     { count: totalUsers },
