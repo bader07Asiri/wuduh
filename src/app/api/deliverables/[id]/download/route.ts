@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { rateLimit, LIMITS } from "@/lib/rate-limit";
+import { getAccessibleProject } from "@/lib/org-access";
 import { DELIVERABLE_LABELS, type DeliverableType } from "@/types";
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -41,8 +42,10 @@ export async function GET(
       return NextResponse.json({ error: "الملف غير موجود" }, { status: 404 });
     }
 
-    const projectUserId = (deliverable.projects as { user_id?: string } | null)?.user_id;
-    if (projectUserId !== userId && deliverable.user_id !== userId) {
+    // صلاحية التحميل: منشئ المخرَج، أو من يملك وصولاً للمشروع (نفس القسم/مالك المؤسسة/مُشارَك)
+    const canAccess = deliverable.user_id === userId ||
+      (deliverable.project_id && !!(await getAccessibleProject(userId, deliverable.project_id as string)));
+    if (!canAccess) {
       return NextResponse.json({ error: "ليس لديك صلاحية لتحميل هذا الملف" }, { status: 403 });
     }
 
