@@ -21,10 +21,12 @@ import { docxToPdf } from "@/lib/pdf/docx-to-pdf";
 import { generateCharterDOCX, generateProjectPlanDOCX, generateRiskRegisterDOCX, generateGenericDOCX } from "@/lib/generators/docx";
 import { generateWBSXLSX, generateRiskRegisterXLSX, generateGanttXLSX, generateBudgetXLSX } from "@/lib/generators/xlsx";
 import { generateKickoffPPTX, generateStakeholderPPTX, generateProgressReportPPTX } from "@/lib/generators/pptx";
-import { getTheme, type DocTheme } from "@/lib/themes";
+import { getTheme, themeFromColor, isValidHex, type DocTheme } from "@/lib/themes";
 import { docTitle } from "@/lib/generators/labels";
 import { resolveBranding, type Plan, type OrgBranding } from "@/lib/branding";
 import type { GenOptions, DocLang } from "@/lib/generators/types";
+import { getAccessibleProject, getEffectivePlan, getMembership } from "@/lib/org-access";
+import { checkAIUsage } from "@/lib/ai/usage-guard";
 
 // أنواع المستندات النصية التي تُبنى عبر المولّد العام (Word)
 const GENERIC_DOC_TYPES = new Set<DeliverableType>([
@@ -127,13 +129,17 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  const { data: project } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("id", projectId)
-    .eq("user_id", userId)
-    .single();
+  // حارس التوليد: يمنع المشرف الرقابي ويطبّق الحد الشهري حسب المستوى الفعّال
+  const usage = await checkAIUsage(userId);
+  if (!usage.allowed) {
+    return NextResponse.json(
+      { error: usage.error, usage: { used: usage.used, limit: usage.limit, plan: usage.plan } },
+      { status: 402 }
+    );
+  }
 
+  // المشروع بصلاحية المؤسسة (مالكه أو نفس القسم أو مُشارَك أو المالك/المشرف)
+  const project = await getAccessibleProject(userId, projectId);
   if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
   if (!project.agenda_approved)
     return NextResponse.json({ error: "Agenda not approved yet" }, { status: 400 });
@@ -155,21 +161,12 @@ export async function POST(req: NextRequest) {
   const agendaData = (project.ai_agenda as Record<string, unknown>) || {};
   const projectName: string = project.name;
 
-  // خطة المستخدم + هوية المؤسسة (للثيم والعلامة المائية والهوية)
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("subscription_plan")
-    .eq("clerk_id", userId)
-    .maybeSingle();
-  const plan = (profile?.subscription_plan ?? "free") as Plan;
+  // المستوى الفعّال + هوية المؤسسة (للثيم والعلامة المائية والهوية)
+  const membership = await getMembership(userId);
+  const effective = await getEffectivePlan(userId, membership);
+  const plan = effective.plan as Plan;
 
   let org: OrgBranding | null = null;
-  const { data: membership } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .maybeSingle();
   if (membership?.org_id) {
     const { data: orgRow } = await supabase
       .from("organizations")
@@ -181,24 +178,49 @@ export async function POST(req: NextRequest) {
 
   const branding = resolveBranding(plan, org, { themeId, useOrgIdentity, includeSignature });
 
-  // ===== Brand System ثلاثي الطبقات: منصة ← مؤسسة ← مشروع/طلب =====
+  // ===== Brand System: منصة ← هوية المؤسسة ← تخصيص صريح =====
   // الطبقة 1: افتراضيات المنصة (وضوح)
   const platform = getTheme(themeId);
-  // الطبقة 2: هوية المؤسسة (لونها الأساسي إن وُجد وسُمح به بالباقة)
-  const orgColor = branding.org?.primary_color;
-  const orgBase: DocTheme = orgColor && /^#?[0-9a-fA-F]{6}$/.test(orgColor)
-    ? { ...platform, primary: orgColor.startsWith("#") ? orgColor : `#${orgColor}` }
+  // الطبقة 2: هوية المؤسسة — عند تفعيلها ولها لون صالح، نشتقّ ثيماً كاملاً من لون المؤسسة
+  const orgBase: DocTheme = branding.org && isValidHex(branding.org.primary_color)
+    ? themeFromColor(branding.org.primary_color, platform)
     : platform;
-  // الطبقة 3: تجاوز المشروع/الطلب (الألوان المخصصة التي اختارها المستخدم)
-  const theme: DocTheme = customColors
+  // الطبقة 3: تخصيص صريح — يتقدّم فقط إذا اختار المستخدم ألواناً غير الافتراضية
+  const DEFAULT_PALETTE: Record<string, string> = { dark: "#0F2057", primary: "#2563EB", accent: "#0EA5E9", light: "#F8FAFC" };
+  const eqHex = (a?: string, b?: string) => (a ?? "").replace("#", "").toLowerCase() === (b ?? "").replace("#", "").toLowerCase();
+  const isDefaultCustom =
+    !customColors ||
+    (["dark", "primary", "accent", "light"] as const).every(k => !customColors[k] || eqHex(customColors[k], DEFAULT_PALETTE[k]));
+  const hasExplicitCustom = !!customColors && !isDefaultCustom;
+  const theme: DocTheme = hasExplicitCustom
     ? {
         id: "custom", name: "ألوان مخصصة", nameEn: "Custom",
-        dark: hex(customColors.dark, orgBase.dark)!,
-        primary: hex(customColors.primary, orgBase.primary)!,
-        accent: hex(customColors.accent, orgBase.accent)!,
-        light: hex(customColors.light, orgBase.light)!,
+        dark: hex(customColors!.dark, orgBase.dark)!,
+        primary: hex(customColors!.primary, orgBase.primary)!,
+        accent: hex(customColors!.accent, orgBase.accent)!,
+        light: hex(customColors!.light, orgBase.light)!,
       }
     : orgBase;
+
+  // جلب بايتات شعار المؤسسة (عند تفعيل الهوية ووجود رابط صورة صالح) لتضمينه في الغلاف
+  if (branding.org?.logo_url) {
+    const url = branding.org.logo_url.trim();
+    if (/^https?:\/\//i.test(url)) {
+      try {
+        const resp = await fetch(url);
+        const ct = (resp.headers.get("content-type") || "").toLowerCase();
+        if (resp.ok && (ct.includes("png") || ct.includes("jpeg") || ct.includes("jpg"))) {
+          const ab = await resp.arrayBuffer();
+          if (ab.byteLength > 0 && ab.byteLength < 5 * 1024 * 1024) {
+            branding.orgLogoData = new Uint8Array(ab);
+          }
+        }
+      } catch {
+        /* رابط غير صالح — نتجاهل ونُبقي شعار وضوح */
+      }
+    }
+  }
+
   const genOptions: GenOptions = { theme, branding, lang, fontArabic: "Noto Sans Arabic" };
 
   // إذا اختار الإنجليزية: ترجم بيانات الأجندة مرة واحدة لتخرج كل المستندات إنجليزية
