@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateWithClaude } from "@/lib/ai/client";
 import { logAiUsage } from "@/lib/ai/usage-log";
 import { checkAIUsage } from "@/lib/ai/usage-guard";
+import { getAccessibleProject } from "@/lib/org-access";
 import {
   buildAgendaPrompt,
   buildCharterPrompt,
@@ -43,9 +44,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request parameters" }, { status: 400 });
   }
 
-  // Fetch project and user profile
-  const [{ data: project }, { data: userProfile }] = await Promise.all([
-    supabase.from("projects").select("*").eq("id", projectId).eq("user_id", userId).single(),
+  // Fetch project (بصلاحية المؤسسة) وملف المستخدم
+  const [project, { data: userProfile }] = await Promise.all([
+    getAccessibleProject(userId, projectId),
     supabase.from("user_profiles").select("*").eq("clerk_id", userId).single(),
   ]);
 
