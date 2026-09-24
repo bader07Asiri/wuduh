@@ -46,9 +46,15 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { email, full_name, dept_id, role = "member" } = body;
+  const { email, full_name, dept_id, role = "member", can_generate } = body;
 
   if (!email?.trim()) return NextResponse.json({ error: "البريد الإلكتروني مطلوب" }, { status: 400 });
+
+  // الدور المطلوب (المالك/المشرف يقدر يعيّن admin/dept_manager/member)
+  const requestedRole = ["admin", "dept_manager", "member"].includes(role) ? role : "member";
+  const finalRole = ["owner", "admin"].includes(membership.role) ? requestedRole : "member";
+  // نوع العضو: منتِج (يولّد، مقعد مدفوع) أو مشرف (رقابة فقط). الافتراضي منتِج.
+  const isProducer = can_generate !== false;
 
   const { data: existing } = await supabase
     .from("org_members")
@@ -73,7 +79,8 @@ export async function POST(req: Request) {
       user_id: profile?.clerk_id ?? `pending_${Date.now()}`,
       email: email.trim().toLowerCase(),
       full_name: full_name || profile?.full_name || "",
-      role: ["owner", "admin"].includes(membership.role) && role === "admin" ? "admin" : "member",
+      role: finalRole,
+      can_generate: isProducer,
       status: profile ? "active" : "invited",
       joined_at: profile ? new Date().toISOString() : null,
     })
@@ -97,12 +104,13 @@ export async function PATCH(req: Request) {
   }
 
   const body = await req.json();
-  const { memberId, role, dept_id, status } = body;
+  const { memberId, role, dept_id, status, can_generate } = body;
 
-  const update: Record<string, string | null> = {};
-  if (role)    update.role    = role;
+  const update: Record<string, string | boolean | null> = {};
+  if (role && ["admin", "dept_manager", "member"].includes(role)) update.role = role;
   if (dept_id !== undefined) update.dept_id = dept_id;
   if (status)  update.status  = status;
+  if (typeof can_generate === "boolean") update.can_generate = can_generate;
 
   const { data } = await supabase
     .from("org_members")
