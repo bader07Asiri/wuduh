@@ -134,3 +134,68 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ org });
 }
+
+// PATCH /api/org — تعديل بيانات المؤسسة (المالك/المشرف فقط)
+export async function PATCH(req: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: "غير مصرّح — سجّل الدخول أولاً" }, { status: 401 });
+
+  const supabase = createAdminClient();
+
+  const { data: membership } = await supabase
+    .from("org_members")
+    .select("org_id, role")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (!membership || !["owner", "admin"].includes(membership.role)) {
+    return NextResponse.json({ error: "ليس لديك صلاحية تعديل المؤسسة" }, { status: 403 });
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "البيانات المرسلة غير صحيحة" }, { status: 400 });
+  }
+
+  const ALLOWED = [
+    "name", "name_en", "industry", "cr_number", "logo_url", "primary_color",
+    "letterhead_text", "signatory_name", "signatory_title", "department",
+    "website", "phone", "email", "address",
+  ] as const;
+
+  const updates: Record<string, unknown> = {};
+  for (const k of ALLOWED) {
+    if (k in body) {
+      const v = body[k];
+      updates[k] = typeof v === "string" ? (v.trim() || null) : v;
+    }
+  }
+
+  if ("name" in updates && !updates.name) {
+    return NextResponse.json({ error: "اسم المؤسسة مطلوب" }, { status: 400 });
+  }
+  // تحقّق من اللون: إن أُرسل ولم يكن HEX صالحاً نتجاهله بدل تخزين قيمة فاسدة
+  if ("primary_color" in updates && updates.primary_color) {
+    const c = String(updates.primary_color);
+    if (!/^#?[0-9a-fA-F]{6}$/.test(c)) updates.primary_color = null;
+    else updates.primary_color = c.startsWith("#") ? c : `#${c}`;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "لا توجد حقول للتحديث" }, { status: 400 });
+  }
+  updates.updated_at = new Date().toISOString();
+
+  const { data: org, error } = await supabase
+    .from("organizations")
+    .update(updates)
+    .eq("id", membership.org_id)
+    .select()
+    .single();
+
+  if (error) return NextResponse.json({ error: `تعذّر حفظ التعديلات: ${error.message}` }, { status: 500 });
+  return NextResponse.json({ org });
+}
