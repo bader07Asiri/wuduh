@@ -4,12 +4,13 @@
 // ============================
 
 import { createClient as createAdminSupabase } from "@supabase/supabase-js";
+import { getEffectivePlan } from "@/lib/org-access";
 
 const MONTHLY_AI_LIMITS: Record<string, number> = {
   free:         5,    // 5 مخرجات/شهر
   starter:      30,   // 30 مخرجة/شهر
-  professional: 150,  // 150 مخرجة/شهر
-  enterprise:   -1,   // غير محدود
+  professional: 150,  // 150 مخرجة/شهر (المقعد المنتِج في المؤسسة)
+  enterprise:   -1,   // غير محدود (المالك/المشرف صاحب الحساب الرئيسي)
 };
 
 interface UsageCheckResult {
@@ -26,14 +27,18 @@ export async function checkAIUsage(userId: string): Promise<UsageCheckResult> {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // جلب خطة المستخدم
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("subscription_plan, subscription_status")
-    .eq("clerk_id", userId)
-    .single();
+  // المستوى الفعّال (يراعي عضوية المؤسسة ونوع العضو: منتِج/مشرف)
+  const eff = await getEffectivePlan(userId);
 
-  const plan = profile?.subscription_plan ?? "free";
+  // المشرف الرقابي لا يولّد
+  if (!eff.canGenerate) {
+    return {
+      allowed: false, used: 0, limit: 0, plan: eff.plan,
+      error: "هذا الحساب للإشراف والمتابعة فقط، ولا يمكنه توليد المستندات. تواصل مع مالك المؤسسة لتفعيل مقعد منتِج.",
+    };
+  }
+
+  const plan = eff.plan;
   const limit = MONTHLY_AI_LIMITS[plan] ?? 5;
 
   // غير محدود للـ enterprise
