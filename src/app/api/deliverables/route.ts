@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { getAccessibleProject } from "@/lib/org-access";
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth();
@@ -14,20 +15,14 @@ export async function GET(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  const { data: project } = await supabase
-    .from("projects")
-    .select("id")
-    .eq("id", projectId)
-    .eq("user_id", userId)
-    .single();
-
+  // صلاحية الوصول للمشروع (مالكه أو نفس القسم أو مُشارَك أو المالك/المشرف)
+  const project = await getAccessibleProject(userId, projectId);
   if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
   const { data, error } = await supabase
     .from("deliverables")
     .select("id, type, format, status, file_size, generated_at, created_at")
     .eq("project_id", projectId)
-    .eq("user_id", userId)
     .eq("status", "ready")
     .order("created_at", { ascending: false });
 
