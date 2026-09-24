@@ -152,3 +152,35 @@ export function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '');
   return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
+
+export function isValidHex(v?: string | null): boolean {
+  return !!v && /^#?[0-9a-fA-F]{6}$/.test(v.trim());
+}
+
+export function normalizeHex(v: string): string {
+  const t = v.trim();
+  return t.startsWith("#") ? t : `#${t}`;
+}
+
+// مزج لون نحو هدف [r,g,b] بنسبة amt (0..1) — لاشتقاق درجات أفتح/أغمق
+function mixToward(hex: string, target: [number, number, number], amt: number): string {
+  const [r, g, b] = hexToRgb(normalizeHex(hex));
+  const mix = (c: number, t: number) => Math.max(0, Math.min(255, Math.round(c + (t - c) * amt)));
+  const nr = mix(r, target[0]), ng = mix(g, target[1]), nb = mix(b, target[2]);
+  return "#" + [nr, ng, nb].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+
+// اشتقاق ثيم كامل (داكن/أساسي/مميّز/فاتح) من لون علامة واحد — لهوية المؤسسة
+export function themeFromColor(input?: string | null, base: DocTheme = DOC_THEMES[0]): DocTheme {
+  if (!isValidHex(input)) return base;
+  const primary = normalizeHex(input as string);
+  return {
+    id: "org",
+    name: "هوية المؤسسة",
+    nameEn: "Org Identity",
+    dark: mixToward(primary, [0, 0, 0], 0.55),        // نسخة غامقة جداً لشريط الغلاف والعناوين
+    primary,                                            // لون العلامة كما هو
+    accent: mixToward(primary, [255, 255, 255], 0.28), // درجة أفتح للتمييز والخطوط
+    light: mixToward(primary, [255, 255, 255], 0.94),  // خلفية فاتحة جداً
+  };
+}
