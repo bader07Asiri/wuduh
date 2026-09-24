@@ -105,7 +105,7 @@ export default async function DashboardPage() {
                 <span className="font-bold font-arabic">باقتك الحالية: {PLAN_LABELS[plan] ?? plan}</span>
               </div>
               {isUnlimited ? (
-                <p className="text-white/70 font-arabic text-sm">مخرجات غير محدودة — استمتع بكامل إمكانيات وضوح.</p>
+                <p className="text-white/70 font-arabic text-sm">حساب مؤسسي — إدارة شاملة لكل الأعمال والأقسام بلا حدود.</p>
               ) : (
                 <>
                   <p className="text-white/70 font-arabic text-sm mb-2">
