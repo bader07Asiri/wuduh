@@ -275,7 +275,7 @@ export interface ProjectFormData {
 }
 
 // ---- Organization & Departments ----
-export type OrgRole = "owner" | "admin" | "member";
+export type OrgRole = "owner" | "admin" | "dept_manager" | "member";
 export type MemberStatus = "active" | "invited" | "suspended";
 
 export interface Organization {
@@ -309,6 +309,7 @@ export interface OrgMember {
   email: string;
   full_name?: string;
   role: OrgRole;
+  can_generate?: boolean;   // منتِج (يولّد، مقعد مدفوع) أو مشرف (رقابة فقط)
   status: MemberStatus;
   invited_at: string;
   joined_at?: string;
