@@ -3,25 +3,24 @@ import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import type { ProjectFormData } from "@/types";
 import { rateLimit, LIMITS } from "@/lib/rate-limit";
+import { getMembership, listAccessibleProjects } from "@/lib/org-access";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// GET /api/projects
+// GET /api/projects — يرجّع المشاريع حسب صلاحية العضو في المؤسسة
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  try {
+    const projects = await listAccessibleProjects(userId);
+    return NextResponse.json(projects);
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "خطأ" }, { status: 500 });
+  }
 }
 
 // POST /api/projects
@@ -68,8 +67,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "End date must be after start date" }, { status: 400 });
   }
 
+  // ربط المشروع بالمؤسسة والقسم تلقائياً (إن كان المستخدم عضو مؤسسة)
+  const membership = await getMembership(userId);
+
   const baseRow = {
     user_id: userId,
+    org_id: membership?.org_id ?? null,
+    dept_id: membership?.dept_id ?? null,
     name: body.name,
     description: body.description,
     client_name: body.client_name,
