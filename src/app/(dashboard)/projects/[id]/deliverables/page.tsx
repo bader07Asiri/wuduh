@@ -197,7 +197,8 @@ export default function DeliverablesPage() {
       const res = await fetch("/api/deliverables/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: id, deliverables: toGenerate, customColors, useOrgIdentity, includeSignature, outputLang }),
+        // نرسل الألوان المخصّصة فقط إذا غيّرها المستخدم فعلاً؛ وإلا نترك السيرفر يطبّق هوية المؤسسة (لونها) أو الافتراضي
+        body: JSON.stringify({ projectId: id, deliverables: toGenerate, customColors: isDefaultColors ? undefined : customColors, useOrgIdentity, includeSignature, outputLang }),
       });
 
       if (!res.ok) throw new Error();
@@ -287,8 +288,13 @@ export default function DeliverablesPage() {
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={useOrgIdentity} onChange={e => setUseOrgIdentity(e.target.checked)} className="rounded" />
             <Building2 size={15} className="text-slate-500" />
-            <span className="text-sm font-arabic text-slate-700">استخدم هوية مؤسستي (شعار + ترويسة) — للباقات الاحترافية فأعلى</span>
+            <span className="text-sm font-arabic text-slate-700">استخدم هوية مؤسستي (شعار + ترويسة + ألوان) — للباقات الاحترافية فأعلى</span>
           </label>
+          {useOrgIdentity && isDefaultColors && (
+            <p className="text-[11px] font-arabic text-brand-blue/80 pr-6 leading-relaxed">
+              ستُطبَّق ألوان مؤسستك وشعارها المحفوظان تلقائياً على المستند. لتجاوزهما، غيّر الألوان بالأعلى يدوياً.
+            </p>
+          )}
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={includeSignature} onChange={e => setIncludeSignature(e.target.checked)} className="rounded" />
             <PenLine size={15} className="text-slate-500" />
