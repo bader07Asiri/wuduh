@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { stripe, getPlanFromPriceId } from "@/lib/stripe";
 import Stripe from "stripe";
 
 const supabase = createClient(
@@ -72,9 +72,5 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ received: true });
 }
 
-function getPlanFromPriceId(priceId: string): string {
-  if (priceId === process.env.STRIPE_STARTER_PRICE_ID)      return "starter";
-  if (priceId === process.env.STRIPE_PROFESSIONAL_PRICE_ID) return "professional";
-  if (priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID)   return "enterprise";
-  return "free";
-}
+// ربط Price ID بالباقة (الشهري + السنوي) — المنطق في src/lib/stripe.ts
+// ليبقى متطابقاً مع ما يرسله الـ checkout.

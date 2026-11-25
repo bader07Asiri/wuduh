@@ -41,6 +41,11 @@ export function WuduhShell({ html }: { html: string }) {
       document.querySelectorAll<HTMLElement>(".price span[data-m]").forEach((s) => {
         s.textContent = a ? (s.dataset.y ?? "") : (s.dataset.m ?? "");
       });
+      // حفظ اختيار الفترة في رابط زر الاشتراك (D-009)
+      document.querySelectorAll<HTMLAnchorElement>("a[data-plan]").forEach((el) => {
+        const qs = new URLSearchParams({ plan: el.dataset.plan ?? "", interval: a ? "yearly" : "monthly" });
+        el.setAttribute("href", `/signup?${qs.toString()}`);
+      });
     };
     if (sw) sw.addEventListener("click", onSw);
 

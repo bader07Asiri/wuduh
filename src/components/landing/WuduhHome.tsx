@@ -1,6 +1,10 @@
 "use client";
 import { useEffect } from "react";
 import "./wuduh-home.css";
+import { PLANS } from "@/types";
+
+// الأسعار تُقرأ من PLANS (المصدر الوحيد) — لا تكتب أرقاماً يدوياً هنا.
+const { starter, professional, enterprise } = PLANS;
 
 const HTML = `
 <div class="intro" id="intro">
@@ -49,12 +53,12 @@ const HTML = `
       <div class="docwrap">
         <span class="fb a"></span><span class="fb b"></span><span class="fb c"></span><span class="fb d"></span>
         <div class="doc focus-el">
-          <div class="doc-h"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><b>ميثاق المشروع</b><span class="lt en">CHARTER</span><span class="chip-ok">معتمد</span></div>
+          <div class="doc-h"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><b>ميثاق المشروع</b><span class="lt en">CHARTER</span><span class="chip-ok">نموذج توضيحي</span></div>
           <div class="doc-b">
             <div class="meta">
               <div class="m"><span>المشروع:</span> <b>توسعة المبنى التجاري</b></div>
-              <div class="m"><span>العميل:</span> <b>مجموعة الفهد العقارية</b></div>
-              <div class="m"><span>الراعي:</span> <b>م. سلطان الفهد</b></div>
+              <div class="m"><span>العميل:</span> <b>شركة مقاولات (مثال)</b></div>
+              <div class="m"><span>الراعي:</span> <b>مدير المشروع</b></div>
               <div class="m"><span>المنهجية:</span> <b>تنبؤية (Predictive)</b></div>
               <div class="m"><span>المدة:</span> <b>٩٠ يوماً</b></div>
               <div class="m"><span>الميزانية:</span> <b>٢٫٤ مليون ر.س</b></div>
@@ -74,7 +78,7 @@ const HTML = `
 
 <!-- TRUST BAND -->
 <div class="band"><div class="wrap">
-  <div class="band-top">
+  <div class="band-top" style="margin-bottom:0">
     <div class="band-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/></svg> مبنيّ على معايير PMI / PMBOK — الإصداران 7 و 8</div>
     <span class="band-sep"></span>
     <div class="band-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> بياناتك مشفّرة</div>
@@ -83,8 +87,6 @@ const HTML = `
     <span class="band-sep"></span>
     <div class="band-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M8 11l4 4 4-4M4 21h16"/></svg> 4 صيغ تصدير</div>
   </div>
-  <div class="clients-lbl">موثوق من فرق المشاريع والجهات — (شعارات عملائنا تُضاف قريباً)</div>
-  <div class="clients"><span class="client-slot">شعار عميل</span><span class="client-slot">شعار عميل</span><span class="client-slot">شعار عميل</span><span class="client-slot">شعار عميل</span><span class="client-slot">شعار عميل</span></div>
 </div></div>
 
 <!-- FEATURES -->
@@ -129,13 +131,13 @@ const HTML = `
   <div class="sec-head center reveal">
     <div class="eyebrow">المخرجات</div>
     <h2>مستندات حقيقية، جاهزة للاعتماد</h2>
-    <p>هذه هي قيمة وضوح الحقيقية — مخرجات مهنية بالعربية، لا رسوم توضيحية فارغة.</p>
+    <p>هذه هي قيمة وضوح الحقيقية — مخرجات مهنية بالعربية، لا رسوم توضيحية فارغة.<br>نماذج توضيحية من مخرجات وضوح لمشروع إنشائي افتراضي.</p>
   </div>
   <div class="show-grid" id="showcase">
     <div class="doc focus-scroll">
-      <div class="doc-h"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><b>ميثاق المشروع</b><span class="lt en">CHARTER</span><span class="chip-ok">معتمد</span></div>
+      <div class="doc-h"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><b>ميثاق المشروع</b><span class="lt en">CHARTER</span><span class="chip-ok">نموذج توضيحي</span></div>
       <div class="doc-b">
-        <div class="meta"><div class="m"><span>الراعي:</span> <b>م. سلطان الفهد</b></div><div class="m"><span>المدة:</span> <b>٩٠ يوماً</b></div></div>
+        <div class="meta"><div class="m"><span>الراعي:</span> <b>مدير المشروع</b></div><div class="m"><span>المدة:</span> <b>٩٠ يوماً</b></div></div>
         <div class="mini-title">الأهداف الرئيسية</div>
         <div class="oline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg> التسليم ضمن ميزانية ٢٫٤ مليون ر.س.</div>
         <div class="oline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg> الالتزام بكود البناء السعودي.</div>
@@ -188,13 +190,13 @@ const HTML = `
     <div class="plan reveal"><h3>المجانية</h3><div class="price">مجاناً</div><div class="per">للأبد</div>
       <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> 5 مخرجات شهرياً</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> كل صيغ التصدير</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> PMBOK 7 و 8</li></ul>
       <a class="btn btn-out btn-sm" style="justify-content:center" href="/signup">ابدأ مجاناً</a></div>
-    <div class="plan reveal"><h3>المبتدئ</h3><div class="price">109 <small>ر.س/شهر</small></div><div class="per">للأفراد والمستقلّين</div>
+    <div class="plan reveal"><h3>المبتدئ</h3><div class="price">${starter.price_monthly} <small>ر.س/شهر</small></div><div class="per">للأفراد والمستقلّين</div>
       <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> 30 مخرجة شهرياً</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> بدون علامة مائية</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> 125+ ثيم</li></ul>
       <a class="btn btn-out btn-sm" style="justify-content:center" href="/signup">اشترك الآن</a></div>
-    <div class="plan pop reveal"><span class="pt">الأكثر شعبية</span><h3>الاحترافي</h3><div class="price">299 <small>ر.س/شهر</small></div><div class="per">للشركات والفرق</div>
+    <div class="plan pop reveal"><span class="pt">الأنسب للفرق</span><h3>الاحترافي</h3><div class="price">${professional.price_monthly} <small>ر.س/شهر</small></div><div class="per">للشركات والفرق</div>
       <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> 150 مخرجة شهرياً</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> هوية مؤسستك على المستندات</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> إدارة الفريق والأقسام</li></ul>
       <a class="btn btn-primary btn-sm" style="justify-content:center" href="/signup">اشترك الآن</a></div>
-    <div class="plan reveal"><h3>المؤسسي</h3><div class="price">749 <small>ر.س/شهر</small></div><div class="per">طبقة الإدارة + 299 ر.س لكل مقعد منتِج · المشرفون مجاناً</div>
+    <div class="plan reveal"><h3>المؤسسي</h3><div class="price">${enterprise.price_monthly} <small>ر.س/شهر</small></div><div class="per">طبقة الإدارة + 299 ر.س لكل مقعد منتِج · المشرفون مجاناً</div>
       <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> لوحة إدارة المؤسسة: رؤية كل الأعمال والأقسام</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> كل عضو منتِج = مقعد احترافي (150/شهر)</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> تقارير المحفظة + API + مدير حساب + SLA</li></ul>
       <a class="btn btn-out btn-sm" style="justify-content:center" href="/contact">تواصل معنا</a></div>
   </div>
@@ -204,18 +206,13 @@ const HTML = `
 <!-- QUOTE + COMPLIANCE -->
 <div class="sec"><div class="wrap">
   <div class="quote-wrap reveal">
-    <div class="quote">
-      <div class="qm">”</div>
-      <p>مكان مخصّص لشهادة عميل حقيقية — تُضاف بعد إطلاق النسخة التجريبية مع الجهات والشركات.</p>
-      <div class="qslot"><span class="qav"></span><div><div style="font-weight:800;font-size:14px;color:var(--ink)">اسم العميل ومنصبه</div><div style="font-size:12.5px;color:var(--muted);font-weight:600">الجهة / الشركة</div></div></div>
-    </div>
     <div class="compliance">
       <svg style="position:absolute;left:-30px;bottom:-30px;opacity:.25" width="160" height="160" viewBox="0 0 160 160" fill="none"><circle cx="80" cy="80" r="40" stroke="#7FB4FF" stroke-width="1.5"/><circle cx="80" cy="80" r="62" stroke="#5C93F0" stroke-width="1.2"/><circle cx="80" cy="80" r="20" stroke="#00B4D8" stroke-width="1.5"/></svg>
       <h4>ثقة وأمان مؤسسي</h4>
       <div class="crow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg> متوافق مع معايير PMI / PMBOK 7 و 8</div>
       <div class="crow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> تشفير للبيانات أثناء النقل والتخزين</div>
       <div class="crow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg> بياناتك لا تُستخدم لتدريب النماذج</div>
-      <div class="crow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V7l6-4 6 4v14"/><path d="M15 21V11l6 4v6"/></svg> جاهز لمتطلبات الجهات والمؤسسات</div>
+      <div class="crow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V7l6-4 6 4v14"/><path d="M15 21V11l6 4v6"/></svg> تصدير PDF وWord وExcel وPowerPoint بهوية مؤسستك</div>
     </div>
   </div>
 </div></div>

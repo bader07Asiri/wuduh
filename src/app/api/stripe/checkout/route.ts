@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { stripe, PRICE_IDS, createCheckoutSession, createCustomer } from "@/lib/stripe";
-import type { PlanName } from "@/lib/stripe";
+import { createCheckoutSession, createCustomer, getPriceId, isPlanName, isBillingInterval } from "@/lib/stripe";
+import type { BillingInterval } from "@/lib/stripe";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,10 +13,27 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { plan }: { plan: PlanName } = await req.json();
+  const { plan, interval: rawInterval }: { plan?: unknown; interval?: unknown } = await req.json();
 
-  if (!PRICE_IDS[plan]) {
+  if (!isPlanName(plan)) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+  }
+
+  // الافتراضي شهري (يحافظ على سلوك الواجهات القديمة التي لا ترسل interval)
+  if (rawInterval !== undefined && !isBillingInterval(rawInterval)) {
+    return NextResponse.json({ error: "Invalid interval" }, { status: 400 });
+  }
+  const interval: BillingInterval = rawInterval ?? "monthly";
+
+  const priceId = getPriceId(plan, interval);
+  if (!priceId) {
+    // لا نحوّل للشهري بصمت: الاشتراك السنوي غير مفعّل حتى يُعرَّف متغيره
+    return NextResponse.json(
+      interval === "yearly"
+        ? { error: "Yearly billing is not available for this plan yet", code: "yearly_price_not_configured" }
+        : { error: "Invalid plan" },
+      { status: 400 }
+    );
   }
 
   // Get or create user profile
@@ -42,7 +59,7 @@ export async function POST(req: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const url = await createCheckoutSession(
     customerId,
-    PRICE_IDS[plan],
+    priceId,
     userId,
     `${baseUrl}/settings?success=1`,
     `${baseUrl}/settings?cancelled=1`

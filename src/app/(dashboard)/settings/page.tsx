@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Check, Zap, CreditCard, User, Shield, Download, Trash2 } from "lucide-react";
-import { PLANS } from "@/types";
+import { PLANS, BILLING_INTERVALS, yearlyMonthlyEquivalent, yearlySavingsPercent } from "@/types";
+import type { BillingInterval } from "@/types";
 import { cn } from "@/lib/utils";
 
 type PlanKey = keyof typeof PLANS;
@@ -27,15 +28,30 @@ export default function SettingsPage() {
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const handleUpgrade = async (plan: PlanKey) => {
+  // فترة الفوترة المختارة (D-009). تُقرأ افتراضياً من الرابط (?interval=yearly)
+  // عبر window.location لتجنّب useSearchParams (يتطلب Suspense في Next 14).
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>("monthly");
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("interval");
+    if (q === "yearly" || q === "monthly") setBillingInterval(q);
+  }, []);
+
+  const handleUpgrade = async (plan: PlanKey, interval: BillingInterval = "monthly") => {
     setLoadingPlan(plan);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, interval }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        if (err?.code === "yearly_price_not_configured") {
+          toast.error("الاشتراك السنوي غير متاح لهذه الباقة حالياً. اختر الاشتراك الشهري أو حاول لاحقاً.");
+          return;
+        }
+        throw new Error();
+      }
       const { url } = await res.json();
       window.location.href = url;
     } catch {
@@ -109,11 +125,33 @@ export default function SettingsPage() {
 
       {/* Subscription Plans */}
       <Card className="mb-6">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex flex-wrap items-center gap-3 mb-6">
           <Zap size={18} className="text-brand-cyan" />
           <div>
             <CardTitle>خطة الاشتراك</CardTitle>
             <CardDescription>ترقية خطتك للحصول على مزايا أكثر</CardDescription>
+          </div>
+          {/* مفتاح شهري / سنوي */}
+          <div className="mr-auto flex items-center gap-2">
+            <div className="inline-flex items-center p-1 bg-slate-100 rounded-xl" role="group" aria-label="فترة الفوترة">
+              {BILLING_INTERVALS.map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  aria-pressed={billingInterval === i}
+                  onClick={() => setBillingInterval(i)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-bold font-arabic transition-colors",
+                    billingInterval === i ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                  )}
+                >
+                  {i === "monthly" ? "شهري" : "سنوي"}
+                </button>
+              ))}
+            </div>
+            <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md font-arabic">
+              وفّر {yearlySavingsPercent(PLANS.starter.price_monthly, PLANS.starter.price_yearly)}%
+            </span>
           </div>
         </div>
 
@@ -135,7 +173,7 @@ export default function SettingsPage() {
                 {isPopular && !isCurrent && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="bg-brand-blue text-white text-[10px] font-black px-3 py-1 rounded-full font-arabic">
-                      الأكثر شعبية
+                      الأنسب للفرق
                     </span>
                   </div>
                 )}
@@ -149,10 +187,22 @@ export default function SettingsPage() {
 
                 <div className="mb-4">
                   <h3 className="font-black text-slate-900 font-arabic text-lg">{plan.name_ar}</h3>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black font-latin text-slate-900">{plan.price_monthly} ر.س</span>
-                    <span className="text-slate-400 text-xs font-arabic">/ شهر</span>
-                  </div>
+                  {billingInterval === "yearly" && plan.price_yearly > 0 ? (
+                    <>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black font-latin text-slate-900">{plan.price_yearly} ر.س</span>
+                        <span className="text-slate-400 text-xs font-arabic">/ سنة</span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-arabic mt-1">
+                        يعادل {yearlyMonthlyEquivalent(plan.price_yearly)} ر.س / شهر
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-black font-latin text-slate-900">{plan.price_monthly} ر.س</span>
+                      <span className="text-slate-400 text-xs font-arabic">/ شهر</span>
+                    </div>
+                  )}
                 </div>
 
                 <ul className="space-y-2 mb-5">
@@ -173,7 +223,7 @@ export default function SettingsPage() {
                     className="w-full"
                     variant={isPopular ? "primary" : "outline"}
                     loading={loadingPlan === key}
-                    onClick={() => handleUpgrade(key)}
+                    onClick={() => handleUpgrade(key, billingInterval)}
                   >
                     ترقية إلى {plan.name_ar}
                   </Button>

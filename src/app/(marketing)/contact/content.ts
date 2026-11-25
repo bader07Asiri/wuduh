@@ -29,11 +29,11 @@ export const HTML = `
   <div class="card reveal" style="padding:30px">
     <div class="mini-title" style="font-size:16px;margin-top:0"><svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg> أرسل لنا رسالة</div>
     <div class="row2">
-      <div class="field"><label class="label">الاسم الكامل <span style="color:var(--red)">*</span></label><input class="input" placeholder="مثال: بدر العسيري"></div>
+      <div class="field"><label class="label">الاسم الكامل <span style="color:var(--red)">*</span></label><input class="input" placeholder="مثال: محمد أحمد"></div>
       <div class="field"><label class="label">البريد الإلكتروني <span style="color:var(--red)">*</span></label><input class="input" type="email" placeholder="name@company.com"></div>
     </div>
     <div class="row2">
-      <div class="field"><label class="label">اسم الشركة <span class="opt">(اختياري)</span></label><input class="input" placeholder="شركة النور للمقاولات"></div>
+      <div class="field"><label class="label">اسم الشركة <span class="opt">(اختياري)</span></label><input class="input" placeholder="مثال: اسم شركتك أو جهتك"></div>
       <div class="field"><label class="label">موضوع الرسالة <span style="color:var(--red)">*</span></label><select class="select"><option>اختر الموضوع</option><option>استفسار عن الخطط والأسعار</option><option>مشكلة تقنية</option><option>طلب عرض تجريبي للمؤسسات</option><option>اقتراح أو ملاحظة</option><option>شراكة أو تكامل</option></select></div>
     </div>
     <div class="field"><label class="label">الرسالة <span style="color:var(--red)">*</span></label><textarea class="textarea" placeholder="اكتب رسالتك بتفصيل — كلما كانت المعلومات أوضح، كان ردنا أكثر فائدة." style="min-height:130px"></textarea><div style="text-align:left;font-size:12px;color:var(--muted);margin-top:5px">الحد الأدنى 20 حرفاً</div></div>

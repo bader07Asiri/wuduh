@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 CREATE TABLE IF NOT EXISTS ai_logs (
   id               UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id          TEXT NOT NULL,
-  project_id       UUID REFERENCES projects(id),
+  project_id       UUID REFERENCES projects(id) ON DELETE SET NULL, -- T-020: يحفظ سجل التكلفة عند حذف المشروع (migrations/20261117_ai_logs_project_fk_set_null.sql)
   prompt_type      TEXT,                  -- e.g. 'project_charter', 'risk_register', 'download_wbs'
   generation_type  TEXT,                  -- alias kept for backwards compatibility
   tokens_used      INTEGER DEFAULT 0,

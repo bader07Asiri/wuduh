@@ -383,6 +383,23 @@ export const PLANS = {
   },
 } as const;
 
+// ---- Billing interval (شهري / سنوي) ----
+// PLANS هو المصدر الوحيد للأسعار المعروضة (بالريال، D-008). صفحة التسعير
+// والصفحة الرئيسية تقرأ منه بدل الأرقام المكتوبة يدوياً.
+export type BillingInterval = "monthly" | "yearly";
+export const BILLING_INTERVALS: readonly BillingInterval[] = ["monthly", "yearly"];
+
+/** الشهري المكافئ للسنوي: price_yearly ÷ 12 مقرّباً لأقرب ريال (Math.round). */
+export function yearlyMonthlyEquivalent(priceYearly: number): number {
+  return Math.round(priceYearly / 12);
+}
+
+/** نسبة توفير السنوي مقابل 12 × الشهري، مقرّبة لأقرب عدد صحيح. */
+export function yearlySavingsPercent(priceMonthly: number, priceYearly: number): number {
+  if (priceMonthly <= 0) return 0;
+  return Math.round((1 - priceYearly / (priceMonthly * 12)) * 100);
+}
+
 // ---- Industry Labels ----
 export const INDUSTRY_LABELS: Record<Industry, string> = {
   construction:   "البناء والإنشاءات",

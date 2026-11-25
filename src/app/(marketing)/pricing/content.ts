@@ -1,3 +1,11 @@
+import { PLANS, yearlyMonthlyEquivalent, yearlySavingsPercent } from "@/types";
+
+// الأسعار تُقرأ من PLANS (المصدر الوحيد) — لا تكتب أرقاماً يدوياً هنا.
+const { starter, professional, enterprise } = PLANS;
+const m = (p: { price_monthly: number }) => p.price_monthly;
+const y = (p: { price_yearly: number }) => yearlyMonthlyEquivalent(p.price_yearly);
+const SAVE_PCT = yearlySavingsPercent(starter.price_monthly, starter.price_yearly);
+
 export const HTML = `
 <style>
 .page-hero{text-align:center;padding:70px 0 24px}
@@ -38,7 +46,7 @@ export const HTML = `
 </div></nav>
 
 <section class="page-hero"><div class="wrap"><span class="eyebrow">الأسعار</span><h1>أسعار شفّافة وبسيطة</h1><p>ابدأ مجاناً — وادفع فقط عندما تحتاج أكثر.</p>
-  <div class="toggle"><span class="on" id="lblM">شهري</span><button class="sw" id="sw"><i></i></button><span id="lblY">سنوي</span><span class="save">وفّر 17%</span></div>
+  <div class="toggle"><span class="on" id="lblM">شهري</span><button class="sw" id="sw"><i></i></button><span id="lblY">سنوي</span><span class="save">وفّر ${SAVE_PCT}%</span></div>
 </div></section>
 
 <div class="wrap">
@@ -46,13 +54,13 @@ export const HTML = `
     <div class="plan reveal"><h3>المجانية</h3><div class="price">مجاناً</div><div class="per">للأبد</div>
       <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> 5 مخرجات شهرياً</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> كل صيغ التصدير</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> 125+ ثيم · PMBOK 7 و 8</li></ul>
       <a class="btn btn-out" href="/signup">ابدأ مجاناً</a></div>
-    <div class="plan reveal"><h3>المبتدئ</h3><div class="price"><span data-m="109" data-y="90">109</span> <small>ر.س/شهر</small></div><div class="per per-note">للأفراد والمستقلّين</div>
+    <div class="plan reveal"><h3>المبتدئ</h3><div class="price"><span data-m="${m(starter)}" data-y="${y(starter)}">${m(starter)}</span> <small>ر.س/شهر</small></div><div class="per per-note">للأفراد والمستقلّين</div>
       <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> 30 مخرجة شهرياً</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> بدون علامة مائية</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> دعم بالبريد</li></ul>
-      <a class="btn btn-out" href="/signup">اشترك الآن</a></div>
-    <div class="plan pop reveal"><span class="pt">الأكثر شعبية</span><h3>الاحترافي</h3><div class="price"><span data-m="299" data-y="248">299</span> <small>ر.س/شهر</small></div><div class="per per-note">للشركات والفرق</div>
+      <a class="btn btn-out" href="/signup?plan=starter&amp;interval=monthly" data-plan="starter">اشترك الآن</a></div>
+    <div class="plan pop reveal"><span class="pt">الأنسب للفرق</span><h3>الاحترافي</h3><div class="price"><span data-m="${m(professional)}" data-y="${y(professional)}">${m(professional)}</span> <small>ر.س/شهر</small></div><div class="per per-note">للشركات والفرق</div>
       <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> 150 مخرجة شهرياً</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> هوية مؤسستك على المستندات</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> إدارة الفريق والأقسام</li></ul>
-      <a class="btn btn-primary" href="/signup">اشترك الآن</a></div>
-    <div class="plan reveal"><h3>المؤسسي</h3><div class="price"><span data-m="749" data-y="622">749</span> <small>ر.س/شهر</small></div><div class="per per-note">طبقة الإدارة + 299 ر.س لكل مقعد منتِج · المشرفون مجاناً</div>
+      <a class="btn btn-primary" href="/signup?plan=professional&amp;interval=monthly" data-plan="professional">اشترك الآن</a></div>
+    <div class="plan reveal"><h3>المؤسسي</h3><div class="price"><span data-m="${m(enterprise)}" data-y="${y(enterprise)}">${m(enterprise)}</span> <small>ر.س/شهر</small></div><div class="per per-note">طبقة الإدارة + 299 ر.س لكل مقعد منتِج · المشرفون مجاناً</div>
       <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> لوحة إدارة المؤسسة: رؤية كل الأعمال والأقسام</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> كل عضو منتِج = مقعد احترافي (150 مخرجة/شهر)</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> إشراف بلا تكلفة + مشاركة ملفات بين الأقسام</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> تقارير المحفظة + API + مدير حساب + SLA</li></ul>
       <a class="btn btn-out" href="/contact">تواصل معنا</a></div>
   </div>

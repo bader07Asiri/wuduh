@@ -142,7 +142,7 @@ export default function OrgSetupPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="اسم الموقّع"
-                placeholder="م. عبدالله العسيري"
+                placeholder="م. محمد أحمد"
                 value={form.signatory_name}
                 onChange={e => setForm(f => ({ ...f, signatory_name: e.target.value }))}
               />
